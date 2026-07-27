@@ -175,6 +175,57 @@
             background: white;
         }
 
+        .combo-search {
+            position: relative;
+        }
+
+        .combo-search input[type="text"] {
+            box-sizing: border-box;
+        }
+
+        .combo-search input[type="text"].combo-selected {
+            border-color: #28a745;
+            background: #f4fbf6;
+        }
+
+        .combo-dropdown {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            right: 0;
+            max-height: 220px;
+            overflow-y: auto;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            z-index: 50;
+        }
+
+        .combo-option {
+            padding: 10px 12px;
+            cursor: pointer;
+            font-size: 0.95em;
+            color: #495057;
+        }
+
+        .combo-option strong {
+            color: #667eea;
+        }
+
+        .combo-option:hover,
+        .combo-option.highlighted {
+            background: #f0f1ff;
+        }
+
+        .combo-no-results {
+            padding: 10px 12px;
+            color: #999;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+
         .tipo-info {
             margin-top: 5px;
             padding: 5px 10px;
@@ -727,7 +778,11 @@
                     
                     <div class="form-group">
                         <label>👤 Joven</label>
-                        <select id="jovenSelect" required>
+                        <div class="combo-search">
+                            <input type="text" id="jovenSearchInput" placeholder="Escribe para buscar un joven..." autocomplete="off">
+                            <div class="combo-dropdown" id="jovenDropdown"></div>
+                        </div>
+                        <select id="jovenSelect" required style="display:none;">
                             <option value="">Cargando...</option>
                         </select>
                     </div>
@@ -746,7 +801,11 @@
 
                     <div class="form-group">
                         <label>📌 Tipo</label>
-                        <select id="tipoSelect" required onchange="mostrarInfoTipo()">
+                        <div class="combo-search">
+                            <input type="text" id="tipoSearchInput" placeholder="Escribe para buscar un tipo..." autocomplete="off">
+                            <div class="combo-dropdown" id="tipoDropdown"></div>
+                        </div>
+                        <select id="tipoSelect" required onchange="mostrarInfoTipo()" style="display:none;">
                             <option value="">Cargando...</option>
                         </select>
                         <div id="tipoInfo" class="tipo-info"></div>
@@ -1081,6 +1140,147 @@
             return filtradas;
         }
 
+        // ===== BUSCADOR PREDICTIVO (COMBOBOX) PARA JOVEN Y TIPO =====
+        function normalizarTexto(str) {
+            return (str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        }
+
+        function crearComboBuscador(opciones) {
+            const inputId = opciones.inputId;
+            const selectId = opciones.selectId;
+            const dropdownId = opciones.dropdownId;
+            const obtenerItems = opciones.obtenerItems;
+            const onSeleccionar = opciones.onSeleccionar;
+
+            const input = document.getElementById(inputId);
+            const select = document.getElementById(selectId);
+            const dropdown = document.getElementById(dropdownId);
+            let itemsFiltrados = [];
+            let indiceResaltado = -1;
+
+            function renderizar(filtro) {
+                const items = ordenarPorNombre(obtenerItems());
+                const filtroNorm = normalizarTexto(filtro);
+                itemsFiltrados = filtroNorm
+                    ? items.filter(item => normalizarTexto(item.nombre).includes(filtroNorm))
+                    : items;
+                indiceResaltado = -1;
+
+                if (itemsFiltrados.length === 0) {
+                    dropdown.innerHTML = '<div class="combo-no-results">Sin resultados</div>';
+                } else {
+                    dropdown.innerHTML = itemsFiltrados.map((item, idx) => {
+                        const nombre = item.nombre;
+                        const nombreNorm = normalizarTexto(nombre);
+                        const pos = filtroNorm ? nombreNorm.indexOf(filtroNorm) : -1;
+                        let html = nombre;
+                        if (pos >= 0) {
+                            html = nombre.slice(0, pos) + '<strong>' + nombre.slice(pos, pos + filtroNorm.length) + '</strong>' + nombre.slice(pos + filtroNorm.length);
+                        }
+                        return '<div class="combo-option" data-index="' + idx + '">' + html + '</div>';
+                    }).join('');
+                }
+                dropdown.style.display = 'block';
+            }
+
+            function ocultar() {
+                dropdown.style.display = 'none';
+                indiceResaltado = -1;
+            }
+
+            function seleccionar(item) {
+                select.value = item.nombre;
+                input.value = item.nombre;
+                input.classList.add('combo-selected');
+                ocultar();
+                select.dispatchEvent(new Event('change'));
+                if (onSeleccionar) onSeleccionar(item);
+            }
+
+            function actualizarResaltado() {
+                const opcionesEl = dropdown.querySelectorAll('.combo-option');
+                opcionesEl.forEach((op, i) => op.classList.toggle('highlighted', i === indiceResaltado));
+                if (indiceResaltado >= 0 && opcionesEl[indiceResaltado]) {
+                    opcionesEl[indiceResaltado].scrollIntoView({ block: 'nearest' });
+                }
+            }
+
+            input.addEventListener('focus', () => renderizar(input.value));
+            input.addEventListener('click', () => renderizar(input.value));
+
+            input.addEventListener('input', () => {
+                select.value = '';
+                input.classList.remove('combo-selected');
+                renderizar(input.value);
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (dropdown.style.display !== 'block') return;
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    indiceResaltado = Math.min(indiceResaltado + 1, itemsFiltrados.length - 1);
+                    actualizarResaltado();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    indiceResaltado = Math.max(indiceResaltado - 1, 0);
+                    actualizarResaltado();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (indiceResaltado >= 0 && itemsFiltrados[indiceResaltado]) {
+                        seleccionar(itemsFiltrados[indiceResaltado]);
+                    } else if (itemsFiltrados.length === 1) {
+                        seleccionar(itemsFiltrados[0]);
+                    }
+                } else if (e.key === 'Escape') {
+                    ocultar();
+                }
+            });
+
+            dropdown.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                const opcion = e.target.closest('.combo-option');
+                if (opcion) {
+                    const idx = parseInt(opcion.dataset.index, 10);
+                    seleccionar(itemsFiltrados[idx]);
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                if (e.target !== input && !dropdown.contains(e.target)) {
+                    ocultar();
+                }
+            });
+
+            return {
+                reset: () => {
+                    input.value = '';
+                    input.classList.remove('combo-selected');
+                    select.value = '';
+                    ocultar();
+                },
+                actualizar: () => {
+                    if (dropdown.style.display === 'block') renderizar(input.value);
+                }
+            };
+        }
+
+        function initComboBuscadores() {
+            window.jovenCombo = crearComboBuscador({
+                inputId: 'jovenSearchInput',
+                selectId: 'jovenSelect',
+                dropdownId: 'jovenDropdown',
+                obtenerItems: () => jovenes
+            });
+
+            window.tipoCombo = crearComboBuscador({
+                inputId: 'tipoSearchInput',
+                selectId: 'tipoSelect',
+                dropdownId: 'tipoDropdown',
+                obtenerItems: () => tipos,
+                onSeleccionar: () => mostrarInfoTipo()
+            });
+        }
+
         // Cargar datos en tiempo real
         function cargarDatos() {
             document.getElementById('syncStatus').innerHTML = '🔄 Sincronizando...';
@@ -1278,10 +1478,10 @@
                     estado: estado
                 });
 
-                document.getElementById('jovenSelect').value = '';
+                if (window.jovenCombo) window.jovenCombo.reset(); else document.getElementById('jovenSelect').value = '';
                 document.getElementById('fechaInput').value = getFechaLocal(); // Usamos fecha local
                 document.getElementById('interventorSelect').selectedIndex = -1;
-                document.getElementById('tipoSelect').value = '';
+                if (window.tipoCombo) window.tipoCombo.reset(); else document.getElementById('tipoSelect').value = '';
                 document.getElementById('tipoInfo').textContent = '';
                 document.getElementById('estadoSelect').value = 'pendiente';
             } catch (error) {
@@ -1370,20 +1570,33 @@
 
         // Actualizar selectores
         function actualizarSelectores() {
+            const jovenesOrdenados = ordenarPorNombre(jovenes);
+            const tiposOrdenados = ordenarPorNombre(tipos);
+            const interventoresOrdenados = ordenarPorNombre(interventores);
+
             const jovenSelect = document.getElementById('jovenSelect');
             jovenSelect.innerHTML = '<option value="">Seleccionar...</option>' + 
-                jovenes.map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join('');
+                jovenesOrdenados.map(j => `<option value="${j.nombre}">${j.nombre}</option>`).join('');
 
             const interventorSelect = document.getElementById('interventorSelect');
-            interventorSelect.innerHTML = interventores.map(i => `<option value="${i.nombre}">${i.nombre}</option>`).join('');
+            interventorSelect.innerHTML = interventoresOrdenados.map(i => `<option value="${i.nombre}">${i.nombre}</option>`).join('');
 
             const tipoSelect = document.getElementById('tipoSelect');
             tipoSelect.innerHTML = '<option value="">Seleccionar...</option>' + 
-                tipos.map(t => `<option value="${t.nombre}">${t.nombre}</option>`).join('');
+                tiposOrdenados.map(t => `<option value="${t.nombre}">${t.nombre}</option>`).join('');
 
             const filtroTipo = document.getElementById('filtroTipo');
             filtroTipo.innerHTML = '<option value="">Todos</option>' + 
-                tipos.map(t => `<option value="${t.nombre}">${t.nombre}</option>`).join('');
+                tiposOrdenados.map(t => `<option value="${t.nombre}">${t.nombre}</option>`).join('');
+
+            // Refrescar los buscadores predictivos de Joven y Tipo
+            if (window.jovenCombo) window.jovenCombo.actualizar();
+            if (window.tipoCombo) window.tipoCombo.actualizar();
+        }
+
+        // Ordena un arreglo de objetos con propiedad "nombre" alfabéticamente (es-ES)
+        function ordenarPorNombre(lista) {
+            return [...lista].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
         }
 
         // Actualizar tabla (CON FECHA CORREGIDA)
@@ -1622,6 +1835,7 @@
                 document.getElementById('programTitle').textContent = tituloGuardado;
             }
             document.getElementById('fechaInput').value = getFechaLocal(); // Fecha local corregida
+            initComboBuscadores();
         };
     </script>
 </body>
