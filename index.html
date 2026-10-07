@@ -550,6 +550,20 @@
             color: white;
         }
 
+        /* Plazo de registro (72 h) */
+        .plazo { margin-top: 5px; font-size: 0.78em; font-weight: 600; white-space: nowrap; }
+        .plazo-corre { color: #0c5460; }
+        .plazo-corre.plazo-urgente { color: #b45f06; }
+        .plazo-fuera { color: #dc3545; }
+        .plazo-ok { color: #28a745; }
+        .plazo-sd { color: #6c757d; font-weight: 400; }
+        .fecha-reg { display: block; font-size: 0.75em; color: #6c757d; margin-top: 2px; }
+        .reg-det summary { cursor: pointer; font-size: 0.85em; color: #4a4fa3; font-weight: 600; }
+        .reg-det .reg-fuera { color: #dc3545; margin-left: 6px; }
+        .reg-mini { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 0.8em; }
+        .reg-mini th, .reg-mini td { padding: 3px 6px; border-bottom: 1px solid #e9ecef; text-align: left; white-space: nowrap; }
+        .reg-mini th { background: #f1f3f5; color: #495057; }
+
         .filter-section {
             display: flex;
             gap: 10px;
@@ -750,6 +764,168 @@
             .charts-grid { grid-template-columns: 1fr; }
             .search-section { flex-direction: column; }
         }
+        /* ===== HISTÓRICO / ALERTAS / FLEXIBILIZACIÓN ===== */
+        .hist-bar { display: flex; justify-content: flex-end; margin-bottom: 15px; }
+        .btn-hist { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 10px 22px; font-size: 1em; font-weight: 600; }
+        .btn-flex { background: #fd7e14; }
+        .alertas-box { border-radius: 15px; padding: 16px 22px; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        .alertas-box.rojo { background: #fff5f5; border: 2px solid #dc3545; }
+        .alertas-box.amarillo { background: #fffbea; border: 2px solid #ffc107; }
+        .alertas-box h3 { color: #495057; font-size: 1.05em; margin-bottom: 10px; }
+        .alertas-lista { max-height: 220px; overflow-y: auto; }
+        .alerta-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.08); }
+        .alerta-item:last-child { border-bottom: none; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-overlay.open { display: flex; }
+        #modalFlex { z-index: 1100; }
+        .modal-box { background: white; border-radius: 15px; max-width: 1000px; width: 100%; max-height: 90vh; overflow-y: auto; padding: 25px; }
+        .modal-box.small { max-width: 480px; }
+        .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 10px; }
+        .modal-head h2 { color: #495057; font-size: 1.4em; }
+        .mes-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+        .mes-chip { border: 2px solid #667eea; background: white; color: #667eea; padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: 600; font-size: 0.9em; }
+        .mes-chip.active { background: #667eea; color: white; }
+        .hist-stats { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+        .hist-stat { background: #f8f9fa; border-radius: 10px; padding: 10px 16px; text-align: center; min-width: 90px; }
+        .hist-stat b { display: block; font-size: 1.5em; color: #667eea; }
+        .hist-stat.mal b { color: #dc3545; }
+        .hist-stat span { font-size: 0.8em; color: #6c757d; }
+        .hist-sub { color: #495057; margin: 18px 0 10px; }
+        .est-badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.85em; font-weight: 600; }
+        .est-ok { background: #d4edda; color: #155724; }
+        .est-bad { background: #f8d7da; color: #721c24; }
+        .est-risk { background: #fff3cd; color: #856404; }
+        .est-flex { background: #e2d9f3; color: #4a2c82; }
+        .est-wait { background: #e9ecef; color: #495057; }
+        .motivo-txt { display: block; font-size: 0.8em; color: #6c757d; font-weight: 400; margin-top: 3px; max-width: 260px; }
+        .flex-textarea { width: 100%; min-height: 100px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1em; resize: vertical; margin: 10px 0 15px; }
+        .modal-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 6px; }
+        #modalJoven { z-index: 1050; }
+        .joven-link { background: none; border: none; color: #667eea; font-weight: 600; cursor: pointer; font-size: 1em; text-decoration: underline; padding: 0; text-align: left; }
+        .joven-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 18px; }
+        .joven-bar select { flex: 1; min-width: 220px; }
+        #modalInforme { z-index: 1060; }
+        .inf-head { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 16px 20px; margin-bottom: 18px; }
+        .inf-head h2 { font-size: 1.3em; margin-bottom: 4px; }
+        .inf-nav { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 16px; }
+        .inf-nav input[type="date"] { width: auto; padding: 7px 10px; }
+        .pct-bar { display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: #e9ecef; min-width: 90px; }
+        .pct-bar .d { background: #17a2b8; }
+        .pct-bar .i { background: #fd7e14; }
+        .pct-legend { font-size: 0.8em; color: #6c757d; margin: 6px 0 14px; }
+        .pct-legend b.d { color: #17a2b8; } .pct-legend b.i { color: #fd7e14; }
+        .var-up { color: #28a745; font-weight: 600; } .var-down { color: #dc3545; font-weight: 600; }
+        .tipo-chip { display: inline-block; background: #eef0ff; color: #4a4fa3; border-radius: 10px; padding: 2px 8px; font-size: 0.8em; margin: 2px 3px 2px 0; }
+        .inf-note { background: #f8f9fa; border-left: 4px solid #667eea; padding: 10px 14px; border-radius: 6px; font-size: 0.9em; color: #495057; margin: 10px 0; }
+        @media print {
+            body { background: white !important; padding: 0 !important; }
+            body > *:not(#modalInforme) { display: none !important; }
+            #modalInforme { position: static !important; display: block !important; background: none !important; padding: 0 !important; }
+            #modalInforme .modal-box { max-height: none !important; overflow: visible !important; box-shadow: none !important; max-width: 100% !important; padding: 0 !important; }
+            .no-print { display: none !important; }
+            .inf-head, .pct-bar, .est-badge, .tipo-chip, .hist-stat { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            tr { page-break-inside: avoid; }
+            .hist-sub { page-break-after: avoid; }
+        }
+        /* ===== GRÁFICOS DEL INFORME ===== */
+        .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 10px 0 5px; }
+        .chart-card { background: #f8f9fa; border-radius: 12px; padding: 14px; break-inside: avoid; page-break-inside: avoid; }
+        .chart-card.full { grid-column: 1 / -1; }
+        .chart-card h4 { color: #495057; font-size: 0.95em; margin-bottom: 10px; }
+        .chart-leg { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.78em; color: #6c757d; margin-top: 8px; }
+        .chart-leg i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; }
+        .chart-leg i.meta-i { background: none; border-left: 2px dashed #dc3545; border-radius: 0; width: 0; height: 11px; }
+        .dona-wrap { display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+        .dona-wrap svg { width: 130px; height: 130px; }
+        .bh-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 0.85em; }
+        .bh-label { width: 130px; flex: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #495057; }
+        .bh-track { flex: 1; display: flex; height: 16px; background: #e9ecef; border-radius: 4px; position: relative; }
+        .bh-seg { display: block; height: 100%; }
+        .bh-meta { position: absolute; top: -3px; bottom: -3px; width: 0; border-left: 2px dashed #dc3545; }
+        .bh-val { width: 44px; flex: none; text-align: right; font-weight: 600; color: #495057; }
+        @media (max-width: 700px) { .chart-grid { grid-template-columns: 1fr; } }
+        @media print { #modalInforme, #modalInforme * { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+        /* ===== ARCHIVO MENSUAL ===== */
+        #modalArchivo { z-index: 1040; }
+        .fila-archivada { opacity: 0.65; background: #f1f3f5; }
+        .arch-chip { display: inline-block; background: #e2d9f3; color: #4a2c82; border-radius: 10px; padding: 2px 8px; font-size: 0.75em; font-weight: 600; margin-left: 6px; }
+        .list-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+        .arch-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 14px; border: 1px solid #e9ecef; border-radius: 10px; margin-bottom: 8px; }
+        .arch-row.archivado { background: #f8f6fc; }
+        .arch-info small { display: block; color: #6c757d; margin-top: 3px; }
+        /* ===== EGRESADOS / PANEL DE CUMPLIMIENTO ===== */
+        .hist-bar { flex-wrap: wrap; gap: 8px; }
+        .btn-alerta { background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%); }
+        .badge-n { display: none; background: white; color: #dc3545; border-radius: 10px; padding: 1px 8px; margin-left: 6px; font-size: 0.85em; font-weight: 700; }
+        #modalCumplimiento { z-index: 1030; }
+        .item.egresado { opacity: 0.7; background: #f1f3f5; }
+        .item.egresado .item-nombre { color: #6c757d; }
+        .egreso-fecha { font-size: 0.8em; color: #6c757d; margin-left: 8px; }
+        .jov-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .chart-card h4 { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .chart-total { background: #667eea; color: white; border-radius: 10px; padding: 1px 10px; font-size: 0.85em; font-weight: 700; white-space: nowrap; }
+        .bh-seg { display: flex; align-items: center; justify-content: center; font-size: 0.75em; font-weight: 700; color: #1b1e21; overflow: hidden; }
+        .inf-nav label { display: flex; align-items: center; gap: 6px; font-size: 0.9em; color: #495057; font-weight: 600; }
+        .menores-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 14px 0 10px; }
+        .var-nota { color: #6c757d; font-style: italic; }
+        .btn-aviso { background: linear-gradient(135deg, #fd7e14 0%, #e8590c 100%); }
+        .rank-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid #e9ecef; font-size: 0.9em; flex-wrap: wrap; }
+        .rank-row:last-child { border-bottom: none; }
+        .rank-pos { width: 24px; height: 24px; border-radius: 50%; background: #e9ecef; color: #495057; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 0.8em; flex: none; }
+        .rank-nom { flex: 1; min-width: 120px; font-weight: 600; color: #495057; }
+        .rank-num { font-size: 1.1em; font-weight: 800; color: #155724; background: #d4edda; border-radius: 12px; padding: 2px 12px; white-space: nowrap; }
+        .rank-num.ind { color: #856404; background: #fff3cd; }
+        .rank-num.cero { color: #721c24; background: #f8d7da; }
+        .rank-num small { font-weight: 600; font-size: 0.65em; margin-left: 5px; }
+        .rank-otro { color: #6c757d; font-size: 0.85em; }
+        .sel-panel { border: 1px solid #dee2e6; border-radius: 10px; padding: 12px; margin: 8px 0 12px; background: #f8f9fa; }
+        .sel-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+        .sel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 6px; max-height: 220px; overflow-y: auto; margin-top: 10px; }
+        .sel-item { display: flex; align-items: center; gap: 6px; font-size: 0.88em; cursor: pointer; padding: 3px 6px; border-radius: 6px; }
+        .sel-item:hover { background: #e9ecef; }
+        .sel-item small { color: #6c757d; }
+        .sel-list { max-height: 360px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 10px; background: #fff; margin: 8px 0 12px; }
+        .sel-row { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-bottom: 1px solid #e9ecef; cursor: pointer; flex-wrap: wrap; font-size: 0.9em; }
+        .sel-row:last-child { border-bottom: none; }
+        .sel-row:hover { background: #f8f9fa; }
+        .sel-row.on { background: #eef1ff; }
+        .sel-nom { flex: 1; min-width: 120px; font-weight: 600; color: #495057; }
+        .rank-num.tot { color: #2c3e8f; background: #e3e8ff; }
+        .tablero { border: 1px solid #dee2e6; border-radius: 10px; padding: 12px 14px; background: #f8f9fa; margin: 8px 0 12px; }
+        .tablero-titulo { font-weight: 700; color: #495057; margin-bottom: 8px; }
+        .tablero-grid { display: grid; gap: 8px; }
+        .tablero-fila { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+        .tablero-fila > span { width: 80px; font-weight: 600; color: #495057; }
+        .tablero-fila label { display: flex; align-items: center; gap: 6px; font-size: 0.88em; color: #6c757d; }
+        .tablero-fila input { width: 70px; padding: 5px 8px; border: 2px solid #e0e0e0; border-radius: 6px; }
+        .tablero-acciones { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+        .sin-act { margin-top: 10px; background: #f8f9fa; border-radius: 8px; padding: 6px 12px; font-size: 0.9em; }
+        .sin-act summary { cursor: pointer; font-weight: 600; color: #495057; }
+        .sin-grid { columns: 3 180px; column-gap: 16px; margin-top: 8px; color: #495057; counter-reset: n; }
+        .sin-grid span { display: block; padding: 2px 0; break-inside: avoid; }
+        .sin-grid span::before { counter-increment: n; content: counter(n) ". "; color: #adb5bd; }
+        @media print { body.solo-seleccion #informeContenido > *:not(#seccionSeleccion) { display: none !important; } }
+        .bh-row { margin-bottom: 3px; font-size: 0.78em; }
+        .bh-track { height: 12px; }
+        .bh-label { width: 120px; }
+        .bh.ancho .bh-val { width: 110px; white-space: nowrap; font-weight: 400; }
+        .sel-resumen { font-size: 0.88em; color: #495057; margin-bottom: 8px; }
+        .obs-titulo { font-weight: 700; color: #2c3e50; margin-top: 14px; }
+        .obs-texto { font-size: 0.88em; color: #333; margin: 4px 0 8px; }
+        .obs-periodo { font-size: 0.75em; color: #6c757d; margin-bottom: 6px; }
+        .obs-leg { display: flex; justify-content: center; gap: 18px; font-size: 0.72em; color: #444; margin-bottom: 4px; }
+        .obs-leg i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; }
+        .sel-bloque { break-inside: avoid; page-break-inside: avoid; }
+        .obs-dos { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+        @media (max-width: 700px) { .obs-dos { grid-template-columns: 1fr; } }
+        @media print {
+            #seccionSeleccion.sel-pagina { break-before: page; page-break-before: always; }
+            body.solo-seleccion #seccionSeleccion.sel-pagina { break-before: auto; page-break-before: auto; }
+        }
+        #modalClave { z-index: 1200; }
+        #claveInput { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1.1em; letter-spacing: 3px; margin: 8px 0 6px; }
+        #claveInput.error { border-color: #dc3545; }
+        .aviso-historial { font-size: 0.85em; color: #6c757d; margin: 0 0 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
     </style>
 </head>
 <body>
@@ -802,7 +978,7 @@
                     <div class="form-group">
                         <label>📌 Tipo</label>
                         <div class="combo-search">
-                            <input type="text" id="tipoSearchInput" placeholder="Escribe para buscar un tipo..." autocomplete="off">
+                            <input type="text" id="tipoSearchInput" placeholder="Escribe el número o el nombre del tipo..." autocomplete="off">
                             <div class="combo-dropdown" id="tipoDropdown"></div>
                         </div>
                         <select id="tipoSelect" required onchange="mostrarInfoTipo()" style="display:none;">
@@ -830,7 +1006,10 @@
                         </div>
 
                         <div id="panelJovenes" class="editor-panel active">
-                            <h4>Lista de Jóvenes</h4>
+                            <div class="jov-head">
+                                <h4 style="margin:0;">Lista de Jóvenes</h4>
+                                <button class="btn-small" id="btnVerEgresados" style="background:#6c757d;" onclick="toggleVerEgresados()">🎓 Ver egresados (0)</button>
+                            </div>
                             <div class="item-list" id="listaJovenes"></div>
                             <div class="add-item-form">
                                 <input type="text" id="nuevoJoven" placeholder="Nombre del joven">
@@ -865,6 +1044,14 @@
                 </div>
 
                 <div>
+                    <!-- HISTÓRICO Y ALERTAS DE CUMPLIMIENTO -->
+                    <div class="hist-bar">
+                        <button class="btn-small btn-hist" onclick="abrirInforme()">📄 Informe por fecha</button>
+                        <button class="btn-small btn-hist" id="btnCumplimiento" onclick="abrirCumplimiento()">🚨 Panel de cumplimiento<span class="badge-n" id="cumplBadge"></span></button>
+                        <button class="btn-small btn-hist" onclick="abrirHistorialJoven()">👤 Historial por joven</button>
+                        <button class="btn-small btn-hist" onclick="abrirHistorico()">📚 Histórico por mes</button>
+                    </div>
+
                     <!-- ESTADÍSTICAS GENERALES -->
                     <div class="stats-section">
                         <h2>📊 Estadísticas Generales</h2>
@@ -974,8 +1161,13 @@
                     <div class="interventions-list">
                         <h3>
                             <span>📝 Listado de Intervenciones</span>
-                            <button class="excel-btn" onclick="exportarExcelCompleto()">📥 Exportar Excel</button>
+                            <div class="list-actions">
+                                <button class="excel-btn" style="background:#764ba2;" onclick="abrirArchivo()">📦 Archivar por mes</button>
+                                <button class="excel-btn" id="btnVerArchivadas" style="background:#667eea;" onclick="toggleVerArchivadas()">🗃️ Ver archivadas (0)</button>
+                                <button class="excel-btn" onclick="exportarExcelCompleto()">📥 Exportar Excel</button>
+                            </div>
                         </h3>
+                        <div id="avisoHistorial" class="aviso-historial"></div>
                         <div class="table-container">
                             <table id="tablaIntervenciones">
                                 <thead>
@@ -993,6 +1185,134 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL HISTÓRICO -->
+    <div class="modal-overlay" id="modalHistorico" onclick="if(event.target===this)cerrarHistorico()">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h2>📚 Histórico de intervenciones por mes</h2>
+                <button class="btn-small btn-danger" onclick="cerrarHistorico()">✖ Cerrar</button>
+            </div>
+            <div class="mes-chips" id="histMeses"></div>
+            <div id="histContenido"></div>
+        </div>
+    </div>
+
+    <!-- MODAL HISTORIAL POR JOVEN -->
+    <div class="modal-overlay" id="modalJoven" onclick="if(event.target===this)cerrarHistorialJoven()">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h2>👤 Historial de intervenciones por joven</h2>
+                <button class="btn-small btn-danger" onclick="cerrarHistorialJoven()">✖ Cerrar</button>
+            </div>
+            <div class="joven-bar">
+                <div style="flex:1;min-width:220px;">
+                    <label for="histJovenSelect">Joven</label>
+                    <select id="histJovenSelect" onchange="seleccionarJovenHist(this.value)"></select>
+                </div>
+                <button class="btn-small btn-excel" onclick="exportarHistorialJoven()">📥 Exportar historial</button>
+            </div>
+            <div id="histJovenContenido"></div>
+        </div>
+    </div>
+
+    <!-- MODAL INFORME SEMANAL -->
+    <div class="modal-overlay" id="modalInforme" onclick="if(event.target===this)cerrarInforme()">
+        <div class="modal-box">
+            <div class="modal-head no-print">
+                <h2>📄 Informe de intervenciones por fecha</h2>
+                <button class="btn-small btn-danger" onclick="cerrarInforme()">✖ Cerrar</button>
+            </div>
+            <div class="inf-nav no-print">
+                <label>Desde <input type="date" id="infDesde" onchange="cambiarFechasInforme()"></label>
+                <label>Hasta <input type="date" id="infHasta" onchange="cambiarFechasInforme()"></label>
+                <button class="btn-small" style="background:#667eea;" onclick="periodoRapido('hoy')">Hoy</button>
+                <button class="btn-small" style="background:#667eea;" onclick="periodoRapido('ayer')">Ayer</button>
+                <button class="btn-small" style="background:#667eea;" onclick="periodoRapido('7d')">Últimos 7 días</button>
+                <button class="btn-small" style="background:#667eea;" onclick="periodoRapido('mes')">Este mes</button>
+                <button class="btn-small btn-excel" onclick="exportarInforme()">📥 Exportar CSV</button>
+                <button class="btn-small btn-excel-joven" onclick="window.print()">🖨️ Imprimir / PDF</button>
+            </div>
+            <div id="informeContenido"></div>
+        </div>
+    </div>
+
+    <!-- MODAL CLAVE -->
+    <div class="modal-overlay" id="modalClave" onclick="if(event.target===this)resolverClave(false)">
+        <div class="modal-box small">
+            <div class="modal-head"><h3>🔒 Clave requerida</h3></div>
+            <p id="claveTexto" style="color:#495057;margin-bottom:6px;"></p>
+            <input type="password" id="claveInput" placeholder="Ingresa la clave" autocomplete="off" inputmode="numeric" onkeydown="if(event.key==='Enter')confirmarClave()">
+            <div id="claveError" style="color:#dc3545;font-size:0.9em;min-height:1.3em;margin-bottom:8px;"></div>
+            <div class="modal-actions">
+                <button class="btn-small" style="background:#6c757d;" onclick="resolverClave(false)">Cancelar</button>
+                <button class="btn-small" onclick="confirmarClave()">🔓 Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL ARCHIVO MENSUAL -->
+    <div class="modal-overlay" id="modalArchivo" onclick="if(event.target===this)cerrarArchivo()">
+        <div class="modal-box" style="max-width:760px;">
+            <div class="modal-head">
+                <h2>📦 Archivar intervenciones por mes</h2>
+                <button class="btn-small btn-danger" onclick="cerrarArchivo()">✖ Cerrar</button>
+            </div>
+            <p style="color:#6c757d;font-size:0.9em;margin-bottom:15px;">
+                Al archivar un mes, sus intervenciones salen del listado y de los totales del panel (directas, indirectas, por tipo y por joven). <strong>No se borran</strong>: siguen contando en el histórico, los informes, las alertas y la exportación. Puedes verlas con "Ver archivadas" o desarchivarlas cuando quieras.
+            </p>
+            <div id="archivoContenido"></div>
+        </div>
+    </div>
+
+    <!-- MODAL PANEL DE CUMPLIMIENTO -->
+    <div class="modal-overlay" id="modalCumplimiento" onclick="if(event.target===this)cerrarCumplimiento()">
+        <div class="modal-box" style="max-width:760px;">
+            <div class="modal-head">
+                <h2>🚨 Panel de cumplimiento</h2>
+                <button class="btn-small btn-danger" onclick="cerrarCumplimiento()">✖ Cerrar</button>
+            </div>
+            <p style="color:#6c757d;font-size:0.9em;margin-bottom:15px;">
+                Estado del <strong>mes en curso</strong>: mínimo de <strong>5 intervenciones por joven al mes</strong>. Se marca en rojo cuando quedan 7 días o menos. Los flexibilizados y egresados no generan alerta. Los incumplimientos del mes anterior están más abajo.
+            </p>
+            <div id="alertasCumplimiento"></div>
+            <div style="text-align:right;margin-top:10px;">
+                <button class="btn-small btn-hist" onclick="cerrarCumplimiento();abrirHistorico()">📚 Ver histórico por mes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EGRESO DE JOVEN -->
+    <div class="modal-overlay" id="modalEgreso" onclick="if(event.target===this)cerrarEgreso()">
+        <div class="modal-box small">
+            <div class="modal-head"><h3>🎓 Archivar joven (egreso)</h3></div>
+            <p id="egresoSub" style="color:#495057;font-weight:600;"></p>
+            <p style="color:#6c757d;font-size:0.9em;margin:8px 0;">
+                Dejará de aparecer en los selectores, el panel, las alertas y el informe. Su historial se conserva y puedes reactivarlo cuando quieras.
+            </p>
+            <label for="egresoFecha">Fecha de egreso</label>
+            <input type="date" id="egresoFecha" style="width:100%;padding:10px;border:2px solid #e0e0e0;border-radius:8px;margin:6px 0 15px;">
+            <div class="modal-actions">
+                <button class="btn-small" style="background:#6c757d;" onclick="cerrarEgreso()">Cancelar</button>
+                <button class="btn-small" onclick="guardarEgreso()">📦 Archivar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL FLEXIBILIZACIÓN -->
+    <div class="modal-overlay" id="modalFlex" onclick="if(event.target===this)cerrarFlex()">
+        <div class="modal-box small">
+            <div class="modal-head"><h3 id="flexTitulo">Flexibilizar</h3></div>
+            <p id="flexSub" style="color:#6c757d;font-size:0.9em;"></p>
+            <label for="flexMotivo">Motivo de la flexibilización</label>
+            <textarea id="flexMotivo" class="flex-textarea" placeholder="Ej: licencia médica, internación, permiso especial..."></textarea>
+            <div class="modal-actions">
+                <button class="btn-small btn-danger" id="flexQuitarBtn" onclick="quitarFlex()" style="display:none;">Quitar flexibilización</button>
+                <button class="btn-small" style="background:#6c757d;" onclick="cerrarFlex()">Cancelar</button>
+                <button class="btn-small" onclick="guardarFlex()">💾 Guardar</button>
             </div>
         </div>
     </div>
@@ -1037,6 +1357,10 @@
         let interventores = [];
         let tipos = [];
         let intervenciones = [];
+        // Para cuidar las lecturas de Firebase: en vivo solo se cargan los últimos meses; lo anterior se trae cuando se necesita
+        const MESES_VIVOS = 3;
+        let intervencionesRecientes = [], intervencionesAntiguas = [];
+        let historialCargado = false, historialCargando = null, _corte = '';
         
         // Variables para filtros globales
         let filtroBusquedaJoven = '';
@@ -1060,6 +1384,89 @@
             const partes = fechaISO.split('-');
             if (partes.length !== 3) return fechaISO;
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
+        }
+
+        // ===== PLAZO DE REGISTRO: 72 h desde el día de la intervención (solo desde octubre 2026) =====
+        const PLAZO_HORAS = 72;
+        const PLAZO_DESDE = '2026-10-01';   // intervenciones con fecha anterior no llevan plazo
+
+        function aplicaPlazo(i) { return !!i.fecha && i.fecha >= PLAZO_DESDE; }
+
+        // Límite = fin del día de la intervención + 72 h (ej.: intervención el 5 → vence el 8 a las 23:59:59)
+        function limitePlazo(i) {
+            const [y, m, d] = i.fecha.split('-').map(Number);
+            return new Date(y, m - 1, d, 23, 59, 59).getTime() + PLAZO_HORAS * 3600 * 1000;
+        }
+
+        // Estado del plazo de una intervención
+        function estadoPlazo(i) {
+            if (!aplicaPlazo(i)) return { tipo: 'na' };
+            const lim = limitePlazo(i);
+            if (i.estado === 'lista') {
+                const cierre = i.fechaLista || i.fechaRegistro;   // momento en que quedó registrada
+                if (!cierre) return { tipo: 'sin-dato', lim };
+                return new Date(cierre).getTime() <= lim ? { tipo: 'a-tiempo', lim } : { tipo: 'fuera', lim };
+            }
+            const resto = lim - Date.now();
+            return resto > 0 ? { tipo: 'corriendo', resto, lim } : { tipo: 'vencido', lim };
+        }
+
+        function pad2(n) { return String(n).padStart(2, '0'); }
+        function fechaHoraCorta(iso) {
+            if (!iso) return '';
+            const d = new Date(iso);
+            if (isNaN(d)) return '';
+            return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+        }
+        function formatoCuenta(ms) {
+            const t = Math.max(0, Math.floor(ms / 1000));
+            return `${Math.floor(t / 3600)}:${pad2(Math.floor(t % 3600 / 60))}:${pad2(t % 60)}`;
+        }
+
+        // Bloque visual del plazo en el listado (junto al estado Pendiente / Lista)
+        function htmlPlazo(i) {
+            const p = estadoPlazo(i);
+            if (p.tipo === 'corriendo') {
+                return `<div class="plazo plazo-corre ${p.resto < 24 * 3600 * 1000 ? 'plazo-urgente' : ''}" data-lim="${p.lim}">⏱ <span class="plazo-t">${formatoCuenta(p.resto)}</span> para registrar</div>`;
+            }
+            if (p.tipo === 'vencido') return '<div class="plazo plazo-fuera">⛔ Fuera de plazo</div>';
+            if (p.tipo === 'fuera') return '<div class="plazo plazo-fuera">⛔ Registrada fuera de plazo</div>';
+            if (p.tipo === 'a-tiempo') return '<div class="plazo plazo-ok">✔ Registrada en plazo</div>';
+            if (p.tipo === 'sin-dato') return '<div class="plazo plazo-sd">Sin hora de registro</div>';
+            return '';
+        }
+
+        // Texto plano del plazo (para el informe)
+        function textoPlazo(i) {
+            const p = estadoPlazo(i);
+            return { 'corriendo': '⏱ En plazo (vence ' + fechaHoraCorta(new Date(p.lim || 0).toISOString()) + ')',
+                     'vencido': '⛔ Fuera de plazo (aún pendiente)', 'fuera': '⛔ Fuera de plazo',
+                     'a-tiempo': '✔ En plazo', 'sin-dato': 'Sin hora de registro', 'na': '— (antes de octubre)' }[p.tipo];
+        }
+
+        // Temporizadores en vivo: se actualizan cada segundo sin redibujar la tabla
+        setInterval(() => {
+            document.querySelectorAll('.plazo-corre[data-lim]').forEach(el => {
+                const resto = Number(el.dataset.lim) - Date.now();
+                if (resto <= 0) {
+                    el.className = 'plazo plazo-fuera';
+                    el.removeAttribute('data-lim');
+                    el.textContent = '⛔ Fuera de plazo';
+                    return;
+                }
+                el.querySelector('.plazo-t').textContent = formatoCuenta(resto);
+                el.classList.toggle('plazo-urgente', resto < 24 * 3600 * 1000);
+            });
+        }, 1000);
+
+        // ===== NUMERACIÓN DE TIPOS (posición en el orden alfabético, igual que en el buscador) =====
+        function numeroTipo(nombre) {
+            const k = ordenarPorNombre(tipos).findIndex(t => t.nombre === nombre);
+            return k >= 0 ? k + 1 : '';
+        }
+        function etiquetaTipo(t) {
+            const n = numeroTipo(t.nombre);
+            return n ? `${n} · ${t.nombre}` : t.nombre;
         }
 
         // Configurar fechas por defecto
@@ -1125,7 +1532,8 @@
 
         // Obtener intervenciones filtradas por búsqueda y fechas
         function getIntervencionesFiltradas() {
-            let filtradas = [...intervenciones];
+            // Las intervenciones archivadas no cuentan en el panel (siguen en histórico e informes)
+            let filtradas = intervenciones.filter(cuentaEnPanel);
             
             if (filtroBusquedaJoven) {
                 filtradas = filtradas.filter(i => i.joven.toLowerCase().includes(filtroBusquedaJoven));
@@ -1151,6 +1559,8 @@
             const dropdownId = opciones.dropdownId;
             const obtenerItems = opciones.obtenerItems;
             const onSeleccionar = opciones.onSeleccionar;
+            const etiquetaFn = opciones.etiqueta || (item => item.nombre);   // texto mostrado
+            const numeroFn = opciones.numero || null;                         // número buscable (opcional)
 
             const input = document.getElementById(inputId);
             const select = document.getElementById(selectId);
@@ -1160,9 +1570,12 @@
 
             function renderizar(filtro) {
                 const items = ordenarPorNombre(obtenerItems());
-                const filtroNorm = normalizarTexto(filtro);
+                const filtroNorm = normalizarTexto(filtro).trim();
+                const porNumero = !!numeroFn && /^\d+$/.test(filtroNorm);   // "12" busca por número de tipo
                 itemsFiltrados = filtroNorm
-                    ? items.filter(item => normalizarTexto(item.nombre).includes(filtroNorm))
+                    ? items.filter(item => porNumero
+                        ? String(numeroFn(item)).startsWith(filtroNorm)
+                        : normalizarTexto(etiquetaFn(item)).includes(filtroNorm))
                     : items;
                 indiceResaltado = -1;
 
@@ -1170,9 +1583,9 @@
                     dropdown.innerHTML = '<div class="combo-no-results">Sin resultados</div>';
                 } else {
                     dropdown.innerHTML = itemsFiltrados.map((item, idx) => {
-                        const nombre = item.nombre;
+                        const nombre = etiquetaFn(item);
                         const nombreNorm = normalizarTexto(nombre);
-                        const pos = filtroNorm ? nombreNorm.indexOf(filtroNorm) : -1;
+                        const pos = filtroNorm ? (porNumero ? 0 : nombreNorm.indexOf(filtroNorm)) : -1;
                         let html = nombre;
                         if (pos >= 0) {
                             html = nombre.slice(0, pos) + '<strong>' + nombre.slice(pos, pos + filtroNorm.length) + '</strong>' + nombre.slice(pos + filtroNorm.length);
@@ -1190,7 +1603,7 @@
 
             function seleccionar(item) {
                 select.value = item.nombre;
-                input.value = item.nombre;
+                input.value = etiquetaFn(item);
                 input.classList.add('combo-selected');
                 ocultar();
                 select.dispatchEvent(new Event('change'));
@@ -1269,7 +1682,7 @@
                 inputId: 'jovenSearchInput',
                 selectId: 'jovenSelect',
                 dropdownId: 'jovenDropdown',
-                obtenerItems: () => jovenes
+                obtenerItems: () => jovenesVigentes()
             });
 
             window.tipoCombo = crearComboBuscador({
@@ -1277,6 +1690,8 @@
                 selectId: 'tipoSelect',
                 dropdownId: 'tipoDropdown',
                 obtenerItems: () => tipos,
+                etiqueta: t => etiquetaTipo(t),
+                numero: t => numeroTipo(t.nombre),
                 onSeleccionar: () => mostrarInfoTipo()
             });
         }
@@ -1288,10 +1703,19 @@
 
             // Jóvenes
             db.collection('jovenes').onSnapshot(snapshot => {
-                jovenes = snapshot.docs.map(doc => ({ id: doc.id, nombre: doc.data().nombre }));
+                jovenes = snapshot.docs.map(doc => ({ id: doc.id, nombre: doc.data().nombre, archivado: !!doc.data().archivado, egresoEn: doc.data().egresoEn || '' }));
                 actualizarListaJovenes();
                 actualizarSelectores();
+                actualizarTabla();
+                actualizarEstadisticas();
+                actualizarGraficoPorTipo();
                 actualizarGraficoPorJoven();
+                actualizarGraficoCircular();
+                actualizarAlertas();
+                renderHistorico();
+                renderHistorialJoven();
+                renderInforme();
+                renderArchivo();
                 document.getElementById('syncStatus').innerHTML = '✅ Conectado a la nube';
                 mostrarNotificacion();
             }, error => {
@@ -1310,6 +1734,8 @@
             // Tipos
             db.collection('tipos').onSnapshot(snapshot => {
                 tipos = snapshot.docs.map(doc => ({ id: doc.id, nombre: doc.data().nombre, parametro: doc.data().parametro }));
+                renderInforme();
+                renderArchivo();
                 actualizarListaTipos();
                 actualizarSelectores();
                 actualizarGraficoPorTipo();
@@ -1317,18 +1743,75 @@
                 mostrarError("Error cargando tipos: " + error.message);
             });
 
-            // Intervenciones
-            db.collection('intervenciones').onSnapshot(snapshot => {
-                intervenciones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                actualizarTabla();
-                actualizarEstadisticas();
-                actualizarGraficoPorTipo();
-                actualizarGraficoPorJoven();
-                actualizarGraficoCircular();
-                mostrarNotificacion();
+            // Flexibilizaciones (por joven y por mes)
+            db.collection('flexibilizaciones').onSnapshot(snapshot => {
+                flexibilizaciones = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                actualizarAlertas();
+                renderHistorico();
+                renderHistorialJoven();
+                renderInforme();
+                renderArchivo();
+            }, error => {
+                mostrarError("Error cargando flexibilizaciones: " + error.message);
+            });
+
+            // Intervenciones recientes (en vivo): solo desde la fecha de corte
+            db.collection('intervenciones').where('fecha', '>=', fechaCorte()).onSnapshot(snapshot => {
+                intervencionesRecientes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                refrescarIntervenciones();
             }, error => {
                 mostrarError("Error cargando intervenciones: " + error.message);
             });
+            actualizarAvisoHistorial();
+        }
+
+        // Primer día del mes más antiguo que se carga en vivo (mes actual + MESES_VIVOS - 1 anteriores)
+        function fechaCorte() {
+            if (!_corte) {
+                const [y, m] = getFechaLocal().slice(0, 7).split('-').map(Number);
+                const d = new Date(y, m - 1 - (MESES_VIVOS - 1), 1);
+                _corte = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+            }
+            return _corte;
+        }
+        function refrescarIntervenciones() {
+            intervenciones = [...intervencionesRecientes, ...intervencionesAntiguas];
+            actualizarAvisoHistorial();
+            actualizarTabla();
+            actualizarEstadisticas();
+            actualizarGraficoPorTipo();
+            actualizarGraficoPorJoven();
+            actualizarGraficoCircular();
+            actualizarAlertas();
+            renderHistorico();
+            renderHistorialJoven();
+            renderInforme();
+            renderArchivo();
+            mostrarNotificacion();
+        }
+        // Trae (una sola vez, y en vivo) las intervenciones anteriores a la fecha de corte
+        function asegurarHistorial() {
+            if (historialCargado) return Promise.resolve();
+            if (historialCargando) return historialCargando;
+            historialCargando = new Promise(resolve => {
+                let primera = true;
+                db.collection('intervenciones').where('fecha', '<', fechaCorte()).onSnapshot(snapshot => {
+                    intervencionesAntiguas = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    historialCargado = true;
+                    refrescarIntervenciones();
+                    if (primera) { primera = false; resolve(); }
+                }, error => {
+                    mostrarError("Error cargando el historial anterior: " + error.message);
+                    historialCargando = null;
+                    resolve();
+                });
+            });
+            return historialCargando;
+        }
+        function actualizarAvisoHistorial() {
+            // Aviso eliminado: ya no se muestra el mensaje ni el botón "Cargar historial anterior"
+            const el = document.getElementById('avisoHistorial');
+            if (el) { el.innerHTML = ''; el.style.display = 'none'; }
         }
 
         function mostrarInfoTipo() {
@@ -1344,16 +1827,65 @@
         }
 
         // Funciones para jóvenes
+        let verEgresados = false;
         function actualizarListaJovenes() {
             const lista = document.getElementById('listaJovenes');
-            lista.innerHTML = jovenes.map(j => `
+            const vigentes = ordenarPorNombre(jovenesVigentes());
+            const egresados = ordenarPorNombre(jovenes.filter(j => j.archivado));
+            const btn = document.getElementById('btnVerEgresados');
+            if (btn) btn.textContent = verEgresados ? `🎓 Ocultar egresados (${egresados.length})` : `🎓 Ver egresados (${egresados.length})`;
+
+            let html = vigentes.map(j => `
                 <div class="item">
-                    <span class="item-nombre">${j.nombre}</span>
+                    <span class="item-nombre">${escHtml(j.nombre)}</span>
                     <div class="item-actions">
+                        <button class="btn-small" style="background:#764ba2;" title="Archivar (egreso)" onclick="abrirEgreso('${j.id}')">📦 Archivar</button>
                         <button class="delete-btn" onclick="eliminarJoven('${j.id}')">🗑️</button>
                     </div>
-                </div>
-            `).join('');
+                </div>`).join('');
+            if (verEgresados) {
+                html += egresados.map(j => `
+                <div class="item egresado">
+                    <span class="item-nombre">🎓 ${escHtml(j.nombre)}<span class="egreso-fecha">${j.egresoEn ? 'Egresó ' + formatearFechaMostrar(j.egresoEn) : ''}</span></span>
+                    <div class="item-actions">
+                        <button class="btn-small" style="background:#28a745;" onclick="reactivarJoven('${j.id}')">↩️ Reactivar</button>
+                        <button class="delete-btn" onclick="eliminarJoven('${j.id}')">🗑️</button>
+                    </div>
+                </div>`).join('');
+            }
+            lista.innerHTML = html || '<div class="no-data">No hay jóvenes vigentes</div>';
+        }
+        function toggleVerEgresados() { verEgresados = !verEgresados; actualizarListaJovenes(); }
+
+        let egresoId = null;
+        function abrirEgreso(id) {
+            const j = jovenes.find(x => x.id === id);
+            if (!j) return;
+            egresoId = id;
+            document.getElementById('egresoSub').textContent = j.nombre;
+            document.getElementById('egresoFecha').value = getFechaLocal();
+            document.getElementById('modalEgreso').classList.add('open');
+        }
+        function cerrarEgreso() { document.getElementById('modalEgreso').classList.remove('open'); egresoId = null; }
+        async function guardarEgreso() {
+            const fecha = document.getElementById('egresoFecha').value;
+            if (!egresoId || !fecha) { alert('Indica la fecha de egreso'); return; }
+            if (!(await pedirClave('Archivar joven: ingresa la clave para continuar.'))) return;
+            try {
+                await db.collection('jovenes').doc(egresoId).update({ archivado: true, egresoEn: fecha });
+                cerrarEgreso();
+            } catch (error) {
+                mostrarError("Error al archivar joven: " + error.message);
+            }
+        }
+        async function reactivarJoven(id) {
+            if (!confirm('¿Reactivar a este joven? Volverá a aparecer en los selectores, el panel y las alertas.')) return;
+            if (!(await pedirClave('Reactivar joven: ingresa la clave para continuar.'))) return;
+            try {
+                await db.collection('jovenes').doc(id).update({ archivado: false, egresoEn: '' });
+            } catch (error) {
+                mostrarError("Error al reactivar: " + error.message);
+            }
         }
 
         async function agregarJoven() {
@@ -1416,9 +1948,9 @@
         // Funciones para tipos
         function actualizarListaTipos() {
             const lista = document.getElementById('listaTipos');
-            lista.innerHTML = tipos.map(t => `
+            lista.innerHTML = ordenarPorNombre(tipos).map((t, k) => `
                 <div class="item">
-                    <span class="item-nombre">${t.nombre} (${t.parametro})</span>
+                    <span class="item-nombre"><strong>${k + 1}.</strong> ${t.nombre} (${t.parametro})</span>
                     <div class="item-actions">
                         <button class="delete-btn" onclick="eliminarTipo('${t.id}')">🗑️</button>
                     </div>
@@ -1475,9 +2007,12 @@
                     interventores: interventoresSel,
                     tipo: tipoNombre,
                     parametro: tipo.parametro,
-                    estado: estado
+                    estado: estado,
+                    fechaRegistro: new Date().toISOString(),                       // cuándo se registró en el sistema
+                    ...(estado === 'lista' ? { fechaLista: new Date().toISOString() } : {})
                 });
 
+                if (fecha < fechaCorte()) asegurarHistorial();   // intervención con fecha antigua: traer el historial para verla
                 if (window.jovenCombo) window.jovenCombo.reset(); else document.getElementById('jovenSelect').value = '';
                 document.getElementById('fechaInput').value = getFechaLocal(); // Usamos fecha local
                 document.getElementById('interventorSelect').selectedIndex = -1;
@@ -1494,7 +2029,11 @@
             const nuevoEstado = estadoActual === 'pendiente' ? 'lista' : 'pendiente';
             if (confirm(`¿Cambiar estado a ${nuevoEstado}?`)) {
                 try {
-                    await db.collection('intervenciones').doc(id).update({ estado: nuevoEstado });
+                    await db.collection('intervenciones').doc(id).update({
+                        estado: nuevoEstado,
+                        // al pasar a Lista se guarda la hora (cuenta para el plazo); al volver a Pendiente se quita
+                        fechaLista: nuevoEstado === 'lista' ? new Date().toISOString() : firebase.firestore.FieldValue.delete()
+                    });
                 } catch (error) {
                     mostrarError("Error al cambiar estado: " + error.message);
                 }
@@ -1514,11 +2053,12 @@
 
         // ACTUALIZAR ESTADÍSTICAS GENERALES
         function actualizarEstadisticas() {
-            const total = intervenciones.length;
-            const directas = intervenciones.filter(i => i.parametro === 'directa').length;
-            const indirectas = intervenciones.filter(i => i.parametro === 'indirecta').length;
-            const listas = intervenciones.filter(i => i.estado === 'lista').length;
-            const pendientes = intervenciones.filter(i => i.estado === 'pendiente').length;
+            const activas = intervenciones.filter(cuentaEnPanel);
+            const total = activas.length;
+            const directas = activas.filter(i => i.parametro === 'directa').length;
+            const indirectas = activas.filter(i => i.parametro === 'indirecta').length;
+            const listas = activas.filter(i => i.estado === 'lista').length;
+            const pendientes = activas.filter(i => i.estado === 'pendiente').length;
 
             document.getElementById('totalIntervenciones').textContent = total;
             document.getElementById('totalDirectas').textContent = directas;
@@ -1570,7 +2110,7 @@
 
         // Actualizar selectores
         function actualizarSelectores() {
-            const jovenesOrdenados = ordenarPorNombre(jovenes);
+            const jovenesOrdenados = ordenarPorNombre(jovenesVigentes());
             const tiposOrdenados = ordenarPorNombre(tipos);
             const interventoresOrdenados = ordenarPorNombre(interventores);
 
@@ -1583,11 +2123,11 @@
 
             const tipoSelect = document.getElementById('tipoSelect');
             tipoSelect.innerHTML = '<option value="">Seleccionar...</option>' + 
-                tiposOrdenados.map(t => `<option value="${t.nombre}">${t.nombre}</option>`).join('');
+                tiposOrdenados.map((t, k) => `<option value="${t.nombre}">${k + 1} · ${t.nombre}</option>`).join('');
 
             const filtroTipo = document.getElementById('filtroTipo');
             filtroTipo.innerHTML = '<option value="">Todos</option>' + 
-                tiposOrdenados.map(t => `<option value="${t.nombre}">${t.nombre}</option>`).join('');
+                tiposOrdenados.map((t, k) => `<option value="${t.nombre}">${k + 1} · ${t.nombre}</option>`).join('');
 
             // Refrescar los buscadores predictivos de Joven y Tipo
             if (window.jovenCombo) window.jovenCombo.actualizar();
@@ -1606,26 +2146,28 @@
             const filtroTipo = document.getElementById('filtroTipo').value;
             const filtroEstado = document.getElementById('filtroEstado').value;
 
-            let filtradas = intervenciones;
+            actualizarBotonArchivadas();
+            let filtradas = verArchivadas ? [...intervenciones] : intervenciones.filter(i => !i.archivado);
             if (filtroJoven) filtradas = filtradas.filter(i => i.joven === filtroJoven);
             if (filtroTipo) filtradas = filtradas.filter(i => i.tipo === filtroTipo);
             if (filtroEstado) filtradas = filtradas.filter(i => i.estado === filtroEstado);
             filtradas.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
 
             tbody.innerHTML = filtradas.map(i => `
-                <tr>
-                    <td>${i.joven}</td>
-                    <td>${formatearFechaMostrar(i.fecha)}</td>
+                <tr class="${i.archivado ? 'fila-archivada' : ''}">
+                    <td>${i.joven}${i.archivado ? '<span class="arch-chip">📦 Archivada</span>' : ''}</td>
+                    <td>${formatearFechaMostrar(i.fecha)}${i.fechaRegistro ? `<span class="fecha-reg">Registrada: ${fechaHoraCorta(i.fechaRegistro)}</span>` : ''}</td>
                     <td>${i.interventores.join('<br>')}</td>
                     <td><span class="tipo-badge ${i.parametro === 'directa' ? 'badge-directa' : 'badge-indirecta'}">${i.tipo}</span></td>
                     <td>
                         <span class="status-badge ${i.estado === 'lista' ? 'status-lista' : 'status-pendiente'}" onclick="cambiarEstado('${i.id}', '${i.estado}')">
                             ${i.estado === 'lista' ? '✅ Lista' : '⏳ Pendiente'}
                         </span>
+                        ${htmlPlazo(i)}
                     </td>
                     <td><button class="delete-btn" onclick="eliminarIntervencion('${i.id}')">🗑️</button></td>
                  </tr>
-            `).join('');
+            `).join('') || `<tr><td colspan="6" style="text-align:center;color:#6c757d;padding:20px;">No hay intervenciones para mostrar${!verArchivadas && intervenciones.some(i => i.archivado) ? ' (hay intervenciones archivadas: usa "Ver archivadas")' : ''}</td></tr>`;
 
             const opciones = [...new Set(intervenciones.map(i => i.joven))];
             document.getElementById('filtroJoven').innerHTML = '<option value="">Todos</option>' + 
@@ -1678,8 +2220,7 @@
             
             const intervencionesFiltradas = getIntervencionesFiltradas();
             const jovenesFiltrados = filtroBusquedaJoven ? 
-                jovenes.filter(j => j.nombre.toLowerCase().includes(filtroBusquedaJoven)) : 
-                jovenes;
+                jovenesVigentes().filter(j => j.nombre.toLowerCase().includes(filtroBusquedaJoven)) : jovenesVigentes();
             
             if (jovenesFiltrados.length === 0) { 
                 contenedor.innerHTML = '<div class="no-data">No hay jóvenes que coincidan con la búsqueda</div>'; 
@@ -1769,10 +2310,10 @@
 
         // Exportar resumen por joven
         function exportarResumenJoven() {
-            if (!jovenes.length) { alert('No hay datos para exportar'); return; }
+            if (!jovenesVigentes().length) { alert('No hay datos para exportar'); return; }
             let csv = "Joven,Directas,Indirectas,Listas,Pendientes,Total\n";
             const intervencionesFiltradas = getIntervencionesFiltradas();
-            jovenes.forEach(j => {
+            jovenesVigentes().forEach(j => {
                 const intervencionesJoven = intervencionesFiltradas.filter(i => i.joven === j.nombre);
                 const directas = intervencionesJoven.filter(i => i.parametro === 'directa').length;
                 const indirectas = intervencionesJoven.filter(i => i.parametro === 'indirecta').length;
@@ -1787,11 +2328,13 @@
         }
 
         // Exportar Excel completo
-        function exportarExcelCompleto() {
+        async function exportarExcelCompleto() {
+            await asegurarHistorial();
             if (!intervenciones.length) { alert('No hay datos para exportar'); return; }
-            let csv = "Joven,Fecha,Interventores,Tipo,Parámetro,Estado\n";
+            let csv = "Joven,Fecha,Interventores,Tipo,Parámetro,Estado,Archivada,Fecha de registro,Plazo 72h\n";
             intervenciones.forEach(i => {
-                csv += `"${i.joven}","${i.fecha}","${i.interventores.join(', ')}","${i.tipo}","${i.parametro}","${i.estado}"\n`;
+                const pz = { 'corriendo': 'En plazo', 'vencido': 'Fuera de plazo (pendiente)', 'fuera': 'Fuera de plazo', 'a-tiempo': 'En plazo', 'sin-dato': 'Sin hora de registro', 'na': 'No aplica' }[estadoPlazo(i).tipo];
+                csv += `"${i.joven}","${i.fecha}","${i.interventores.join(', ')}","${i.tipo}","${i.parametro}","${i.estado}","${i.archivado ? 'Sí' : 'No'}","${fechaHoraCorta(i.fechaRegistro)}","${pz}"\n`;
             });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv' }));
@@ -1825,6 +2368,1010 @@
             } else {
                 document.querySelectorAll('.tab-btn')[2].classList.add('active');
                 document.getElementById('panelTipos').classList.add('active');
+            }
+        }
+
+        // ===== HISTÓRICO MENSUAL, ALERTAS Y FLEXIBILIZACIÓN =====
+        const META_MENSUAL = 5;   // mínimo de intervenciones totales por mes
+        const DIAS_AVISO = 7;     // días antes de fin de mes para avisar "en riesgo"
+        const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+        let flexibilizaciones = [];
+        let mesHistorico = null;
+        let flexCtx = null;
+
+        function escHtml(s) {
+            return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+        function encArg(s) { return encodeURIComponent(s).replace(/'/g, '%27'); }
+        function mesActual() { return getFechaLocal().slice(0, 7); }
+        function mesAnterior(m) {
+            let [y, mo] = m.split('-').map(Number);
+            mo--; if (mo === 0) { mo = 12; y--; }
+            return `${y}-${String(mo).padStart(2, '0')}`;
+        }
+        function nombreMes(m) { const [y, mo] = m.split('-'); return `${MESES[+mo - 1]} ${y}`; }
+        function intervencionesDelMes(m) { return intervenciones.filter(i => (i.fecha || '').slice(0, 7) === m); }
+        function getFlex(m, joven) { return flexibilizaciones.find(f => f.mes === m && f.joven === joven); }
+        function flexDocId(m, joven) { return m + '__' + encodeURIComponent(joven); }
+        function diasRestantesMes(m) {
+            const [y, mo] = m.split('-').map(Number);
+            return new Date(y, mo, 0).getDate() - new Date().getDate();
+        }
+
+        // ----- Jóvenes vigentes / egresados -----
+        function jovenesVigentes() { return jovenes.filter(j => !j.archivado); }
+        function getJoven(n) { return jovenes.find(j => j.nombre === n); }
+        function esEgresado(n) { const j = getJoven(n); return !!(j && j.archivado); }
+        function egresoMesDe(n) { const j = getJoven(n); return j && j.archivado ? (j.egresoEn ? j.egresoEn.slice(0, 7) : mesActual()) : ''; }
+        function cuentaEnPanel(i) { return !i.archivado && !esEgresado(i.joven); }
+
+        function estadoCumplimiento(m, joven, total) {
+            if (total >= META_MENSUAL) return { tipo: 'ok' };
+            const eg = egresoMesDe(joven);
+            if (eg && m >= eg) return { tipo: 'egreso' };
+            const flex = getFlex(m, joven);
+            if (flex) return { tipo: 'flex', flex };
+            const actual = mesActual();
+            if (m < actual) return { tipo: 'incumple' };
+            if (m === actual && diasRestantesMes(m) <= DIAS_AVISO) return { tipo: 'riesgo' };
+            return { tipo: 'curso' };
+        }
+
+        function resumenMes(m) {
+            const ints = intervencionesDelMes(m);
+            const nombres = new Set(jovenes.filter(j => !j.archivado || m < egresoMesDe(j.nombre)).map(j => j.nombre));
+            ints.forEach(i => nombres.add(i.joven));
+            return [...nombres].sort((a, b) => a.localeCompare(b, 'es')).map(nombre => {
+                const propias = ints.filter(i => i.joven === nombre);
+                const directas = propias.filter(i => i.parametro === 'directa').length;
+                return { nombre, total: propias.length, directas, indirectas: propias.length - directas, ...estadoCumplimiento(m, nombre, propias.length) };
+            });
+        }
+
+        // ----- Alertas en la pantalla principal -----
+        function cajaAlerta(clase, titulo, mes, lista) {
+            return `<div class="alertas-box ${clase}"><h3>${titulo}</h3><div class="alertas-lista">` +
+                lista.map(r => `<div class="alerta-item">
+                    <span><strong>${escHtml(r.nombre)}</strong> — ${r.total}/${META_MENSUAL} <small style="color:#6c757d">(faltan ${Math.max(0, META_MENSUAL - r.total)} · ${r.directas} dir. / ${r.indirectas} ind.)</small></span>
+                    <button class="btn-small btn-flex" onclick="abrirFlex('${mes}','${encArg(r.nombre)}')">Flexibilizar</button>
+                </div>`).join('') + `</div></div>`;
+        }
+
+        function actualizarAlertas() {
+            const cont = document.getElementById('alertasCumplimiento');
+            if (!cont) return;
+            const actual = mesActual();
+            const prev = mesAnterior(actual);
+            const resAct = resumenMes(actual);
+            const bajo = resAct.filter(r => r.tipo === 'riesgo' || r.tipo === 'curso')
+                .sort((a, b) => a.total - b.total || a.nombre.localeCompare(b.nombre, 'es'));
+            const flex = resAct.filter(r => r.tipo === 'flex');
+            const cumplen = resAct.filter(r => r.tipo === 'ok').length;
+            const d = diasRestantesMes(actual);
+            const urgente = d <= DIAS_AVISO;
+            const cierre = d === 0 ? 'el mes termina hoy' : `faltan ${d} día(s) para que termine el mes`;
+
+            let html = `<div class="hist-stats">
+                <div class="hist-stat"><b>${cumplen}</b><span>Ya cumplen</span></div>
+                <div class="hist-stat ${bajo.length ? 'mal' : ''}"><b>${bajo.length}</b><span>Con menos de ${META_MENSUAL}</span></div>
+                <div class="hist-stat"><b>${flex.length}</b><span>Flexibilizados</span></div>
+                <div class="hist-stat"><b>${d}</b><span>Días restantes</span></div>
+            </div>`;
+
+            if (bajo.length) {
+                html += cajaAlerta(urgente ? 'rojo' : 'amarillo',
+                    `${urgente ? '🚨' : '⚠️'} ${nombreMes(actual)}: ${bajo.length} joven(es) con menos de ${META_MENSUAL} intervenciones (${cierre})`, actual, bajo);
+            } else {
+                html += `<div class="alertas-box" style="background:#f0fff4;border:2px solid #28a745;"><h3 style="margin:0;">✅ Todos los jóvenes vigentes ya cumplen las ${META_MENSUAL} intervenciones de ${nombreMes(actual)}</h3></div>`;
+            }
+            if (flex.length) {
+                html += `<div class="alertas-box" style="background:#f8f6fc;border:2px solid #b8a2e0;"><h3>🟡 Flexibilizados en ${nombreMes(actual)}</h3>` +
+                    flex.map(r => `<div class="alerta-item"><span><strong>${escHtml(r.nombre)}</strong> — ${r.total}/${META_MENSUAL} <small style="color:#6c757d">${escHtml(r.flex.motivo)}</small></span>
+                        <button class="btn-small btn-flex" onclick="abrirFlex('${actual}','${encArg(r.nombre)}')">✏️ Editar</button></div>`).join('') + '</div>';
+            }
+            // Mes anterior (cerrado), en segundo plano
+            if (intervencionesDelMes(prev).length > 0) {
+                const inc = resumenMes(prev).filter(r => r.tipo === 'incumple');
+                if (inc.length) {
+                    html += `<details style="margin-top:10px;"><summary style="cursor:pointer;font-weight:600;color:#721c24;">📁 Mes anterior (${nombreMes(prev)}): ${inc.length} incumplimiento(s)</summary>` +
+                        cajaAlerta('rojo', `🚨 INCUMPLIMIENTO ${nombreMes(prev)}`, prev, inc) + '</details>';
+                }
+            }
+            cont.innerHTML = html;
+
+            const n = bajo.length;
+            const badge = document.getElementById('cumplBadge');
+            if (badge) { badge.textContent = n; badge.style.display = n ? 'inline-block' : 'none'; }
+            const btn = document.getElementById('btnCumplimiento');
+            if (btn) { btn.classList.toggle('btn-alerta', n > 0 && urgente); btn.classList.toggle('btn-aviso', n > 0 && !urgente); }
+        }
+        function abrirCumplimiento() { document.getElementById('modalCumplimiento').classList.add('open'); actualizarAlertas(); }
+        function cerrarCumplimiento() { document.getElementById('modalCumplimiento').classList.remove('open'); }
+
+        // ----- Histórico por mes -----
+        function mesesDisponibles() {
+            const s = new Set(intervenciones.map(i => (i.fecha || '').slice(0, 7)).filter(Boolean));
+            s.add(mesActual());
+            return [...s].sort().reverse();
+        }
+        function abrirHistorico() {
+            asegurarHistorial();
+            if (!mesHistorico) mesHistorico = mesActual();
+            document.getElementById('modalHistorico').classList.add('open');
+            renderHistorico();
+        }
+        function cerrarHistorico() { document.getElementById('modalHistorico').classList.remove('open'); }
+        function seleccionarMes(m) { mesHistorico = m; renderHistorico(); }
+
+        function badgeEstado(r) {
+            if (r.tipo === 'ok') return '<span class="est-badge est-ok">✅ Cumple</span>';
+            if (r.tipo === 'incumple') return '<span class="est-badge est-bad">🚨 Incumplimiento</span>';
+            if (r.tipo === 'riesgo') return '<span class="est-badge est-risk">⚠️ En riesgo</span>';
+            if (r.tipo === 'flex') return `<span class="est-badge est-flex">🟡 Flexibilizado</span><span class="motivo-txt">${escHtml(r.flex.motivo)}</span>`;
+            if (r.tipo === 'egreso') return '<span class="est-badge est-wait">🎓 Egresado</span>';
+            return `<span class="est-badge est-wait">⏳ En curso (faltan ${META_MENSUAL - r.total})</span>`;
+        }
+
+        function renderHistorico() {
+            const modal = document.getElementById('modalHistorico');
+            if (!modal || !modal.classList.contains('open')) return;
+            const meses = mesesDisponibles();
+            if (!meses.includes(mesHistorico)) mesHistorico = meses[0];
+
+            document.getElementById('histMeses').innerHTML = meses.map(m =>
+                `<button class="mes-chip ${m === mesHistorico ? 'active' : ''}" onclick="seleccionarMes('${m}')">${nombreMes(m)} (${intervencionesDelMes(m).length})</button>`
+            ).join('');
+
+            const ints = intervencionesDelMes(mesHistorico).sort((a, b) => b.fecha.localeCompare(a.fecha));
+            const res = resumenMes(mesHistorico);
+            const directas = ints.filter(i => i.parametro === 'directa').length;
+            const incumplen = res.filter(r => r.tipo === 'incumple').length;
+            const flexCount = res.filter(r => r.tipo === 'flex').length;
+
+            const filasJov = res.map(r => `<tr>
+                <td><button class="joven-link" onclick="abrirHistorialJoven('${encArg(r.nombre)}')">${escHtml(r.nombre)}</button></td>
+                <td><strong>${r.total}</strong> / ${META_MENSUAL}</td>
+                <td>${r.directas}</td>
+                <td>${r.indirectas}</td>
+                <td>${badgeEstado(r)}</td>
+                <td>${(r.tipo === 'ok' || r.tipo === 'egreso') ? '' :
+                    `<button class="btn-small btn-flex" onclick="abrirFlex('${mesHistorico}','${encArg(r.nombre)}')">${r.tipo === 'flex' ? '✏️ Editar' : 'Flexibilizar'}</button>`}</td>
+            </tr>`).join('');
+
+            const filasInt = ints.map(i => `<tr>
+                <td>${escHtml(i.joven)}</td>
+                <td>${formatearFechaMostrar(i.fecha)}</td>
+                <td>${(i.interventores || []).map(escHtml).join('<br>')}</td>
+                <td><span class="tipo-badge ${i.parametro === 'directa' ? 'badge-directa' : 'badge-indirecta'}">${escHtml(i.tipo)}</span></td>
+                <td>${i.estado === 'lista' ? '✅ Lista' : '⏳ Pendiente'}</td>
+            </tr>`).join('');
+
+            document.getElementById('histContenido').innerHTML = `
+                <div class="hist-stats">
+                    <div class="hist-stat"><b>${ints.length}</b><span>Total</span></div>
+                    <div class="hist-stat"><b>${directas}</b><span>Directas</span></div>
+                    <div class="hist-stat"><b>${ints.length - directas}</b><span>Indirectas</span></div>
+                    <div class="hist-stat ${incumplen ? 'mal' : ''}"><b>${incumplen}</b><span>Incumplimientos</span></div>
+                    <div class="hist-stat"><b>${flexCount}</b><span>Flexibilizados</span></div>
+                    <button class="btn-small btn-excel" style="align-self:center;" onclick="exportarMesHistorico()">📥 Exportar mes</button>
+                </div>
+                <h3 class="hist-sub">👥 Cumplimiento por joven (mínimo ${META_MENSUAL} intervenciones)</h3>
+                <div class="table-container"><table>
+                    <thead><tr><th>Joven</th><th>Total</th><th>Directas</th><th>Indirectas</th><th>Estado</th><th>Acción</th></tr></thead>
+                    <tbody>${filasJov || '<tr><td colspan="6">Sin jóvenes registrados</td></tr>'}</tbody>
+                </table></div>
+                <h3 class="hist-sub">📝 Intervenciones de ${nombreMes(mesHistorico)}</h3>
+                <div class="table-container"><table>
+                    <thead><tr><th>Joven</th><th>Fecha</th><th>Interventor(es)</th><th>Tipo</th><th>Estado</th></tr></thead>
+                    <tbody>${filasInt || '<tr><td colspan="5">No hay intervenciones este mes</td></tr>'}</tbody>
+                </table></div>`;
+        }
+
+        function exportarMesHistorico() {
+            const m = mesHistorico;
+            const ints = intervencionesDelMes(m).sort((a, b) => a.fecha.localeCompare(b.fecha));
+            const q = s => `"${String(s == null ? '' : s).replace(/"/g, '""')}"`;
+            const nombreEstado = { ok: 'Cumple', incumple: 'Incumplimiento', riesgo: 'En riesgo', flex: 'Flexibilizado', curso: 'En curso', egreso: 'Egresado' };
+            let csv = `Cumplimiento ${nombreMes(m)}\n` + 'Joven,Total,Directas,Indirectas,Estado,Motivo flexibilización\n';
+            resumenMes(m).forEach(r => {
+                csv += [q(r.nombre), r.total, r.directas, r.indirectas, q(nombreEstado[r.tipo]), q(r.flex ? r.flex.motivo : '')].join(',') + '\n';
+            });
+            csv += '\nIntervenciones\nJoven,Fecha,Interventores,Tipo,Parámetro,Estado\n';
+            ints.forEach(i => {
+                csv += [q(i.joven), q(i.fecha), q((i.interventores || []).join(', ')), q(i.tipo), q(i.parametro), q(i.estado)].join(',') + '\n';
+            });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv' }));
+            link.download = `historico_${m}.csv`;
+            link.click();
+        }
+
+        // ----- Historial por joven -----
+        let jovenHistorial = '';
+
+        function nombresHistorial() {
+            const s = new Set(jovenes.map(j => j.nombre));
+            intervenciones.forEach(i => { if (i.joven) s.add(i.joven); });
+            return [...s].sort((a, b) => a.localeCompare(b, 'es'));
+        }
+        function abrirHistorialJoven(jovenEnc) {
+            asegurarHistorial();
+            const nombres = nombresHistorial();
+            jovenHistorial = jovenEnc ? decodeURIComponent(jovenEnc) : (jovenHistorial || nombres[0] || '');
+            document.getElementById('modalJoven').classList.add('open');
+            renderHistorialJoven();
+        }
+        function cerrarHistorialJoven() { document.getElementById('modalJoven').classList.remove('open'); }
+        function seleccionarJovenHist(nombre) { jovenHistorial = nombre; renderHistorialJoven(); }
+
+        // Resumen mes a mes desde la primera intervención del joven hasta el mes actual
+        function resumenMensualJoven(nombre) {
+            const ints = intervenciones.filter(i => i.joven === nombre && i.fecha);
+            if (!ints.length) return [];
+            const primero = ints.map(i => i.fecha.slice(0, 7)).sort()[0];
+            const filas = [];
+            const act = mesActual(), egm = egresoMesDe(nombre);
+            let m = egm && egm < act ? egm : act;
+            while (m >= primero) {
+                const delMes = ints.filter(i => i.fecha.slice(0, 7) === m);
+                const directas = delMes.filter(i => i.parametro === 'directa').length;
+                filas.push({ mes: m, total: delMes.length, directas, indirectas: delMes.length - directas, ...estadoCumplimiento(m, nombre, delMes.length) });
+                m = mesAnterior(m);
+            }
+            return filas;
+        }
+
+        function renderHistorialJoven() {
+            const modal = document.getElementById('modalJoven');
+            if (!modal || !modal.classList.contains('open')) return;
+            const nombres = nombresHistorial();
+            if (!nombres.includes(jovenHistorial)) jovenHistorial = nombres[0] || '';
+            const sel = document.getElementById('histJovenSelect');
+            sel.innerHTML = nombres.map(n => `<option value="${escHtml(n)}" ${n === jovenHistorial ? 'selected' : ''}>${escHtml(n)}${esEgresado(n) ? ' 🎓 (egresado)' : ''}</option>`).join('');
+
+            const cont = document.getElementById('histJovenContenido');
+            if (!jovenHistorial) { cont.innerHTML = '<p>No hay jóvenes registrados.</p>'; return; }
+
+            const ints = intervenciones.filter(i => i.joven === jovenHistorial).sort((a, b) => (b.fecha || '').localeCompare(a.fecha || ''));
+            const directas = ints.filter(i => i.parametro === 'directa').length;
+            const listas = ints.filter(i => i.estado === 'lista').length;
+            const meses = resumenMensualJoven(jovenHistorial);
+            const incumplidos = meses.filter(r => r.tipo === 'incumple').length;
+
+            const filasMes = meses.map(r => `<tr>
+                <td>${nombreMes(r.mes)}</td><td><strong>${r.total}</strong> / ${META_MENSUAL}</td><td>${r.directas}</td><td>${r.indirectas}</td><td>${badgeEstado(r)}</td></tr>`).join('');
+            const filasInt = ints.map(i => `<tr>
+                <td>${formatearFechaMostrar(i.fecha)}</td>
+                <td>${(i.interventores || []).map(escHtml).join('<br>')}</td>
+                <td><span class="tipo-badge ${i.parametro === 'directa' ? 'badge-directa' : 'badge-indirecta'}">${escHtml(i.tipo)}</span></td>
+                <td>${i.estado === 'lista' ? '✅ Lista' : '⏳ Pendiente'}</td></tr>`).join('');
+
+            cont.innerHTML = `
+                <div class="hist-stats">
+                    <div class="hist-stat"><b>${ints.length}</b><span>Total</span></div>
+                    <div class="hist-stat"><b>${directas}</b><span>Directas</span></div>
+                    <div class="hist-stat"><b>${ints.length - directas}</b><span>Indirectas</span></div>
+                    <div class="hist-stat"><b>${listas}</b><span>Listas</span></div>
+                    <div class="hist-stat"><b>${ints.length - listas}</b><span>Pendientes</span></div>
+                    <div class="hist-stat ${incumplidos ? 'mal' : ''}"><b>${incumplidos}</b><span>Meses incumplidos</span></div>
+                </div>
+                <h3 class="hist-sub">📅 Resumen mes a mes</h3>
+                <div class="table-container"><table>
+                    <thead><tr><th>Mes</th><th>Total</th><th>Directas</th><th>Indirectas</th><th>Estado</th></tr></thead>
+                    <tbody>${filasMes || '<tr><td colspan="5">Sin intervenciones</td></tr>'}</tbody>
+                </table></div>
+                <h3 class="hist-sub">📝 Todas las intervenciones</h3>
+                <div class="table-container"><table>
+                    <thead><tr><th>Fecha</th><th>Interventor(es)</th><th>Tipo</th><th>Estado</th></tr></thead>
+                    <tbody>${filasInt || '<tr><td colspan="4">Este joven no tiene intervenciones</td></tr>'}</tbody>
+                </table></div>`;
+        }
+
+        function exportarHistorialJoven() {
+            const nombre = jovenHistorial;
+            if (!nombre) { alert('Selecciona un joven'); return; }
+            const q = s => `"${String(s == null ? '' : s).replace(/"/g, '""')}"`;
+            const nombreEstado = { ok: 'Cumple', incumple: 'Incumplimiento', riesgo: 'En riesgo', flex: 'Flexibilizado', curso: 'En curso', egreso: 'Egresado' };
+            let csv = `Historial de ${nombre}\n\nResumen mensual\nMes,Total,Directas,Indirectas,Estado,Motivo flexibilización\n`;
+            resumenMensualJoven(nombre).forEach(r => {
+                csv += [q(nombreMes(r.mes)), r.total, r.directas, r.indirectas, q(nombreEstado[r.tipo]), q(r.flex ? r.flex.motivo : '')].join(',') + '\n';
+            });
+            csv += '\nIntervenciones\nFecha,Interventores,Tipo,Parámetro,Estado\n';
+            intervenciones.filter(i => i.joven === nombre).sort((a, b) => (a.fecha || '').localeCompare(b.fecha || '')).forEach(i => {
+                csv += [q(i.fecha), q((i.interventores || []).join(', ')), q(i.tipo), q(i.parametro), q(i.estado)].join(',') + '\n';
+            });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv' }));
+            link.download = `historial_${nombre.replace(/[^\w\-]+/g, '_')}_${getFechaLocal()}.csv`;
+            link.click();
+        }
+
+        // ----- Informe semanal -----
+        let filtroMenores = 'tot';   // métrica para ordenar/ver: 'tot' | 'dir' | 'ind'
+        let rangoMes = { tot: [null, null], dir: [null, null], ind: [null, null] };   // [desde, hasta]; null = sin límite
+        function filtrarMenores(k) { filtroMenores = k || 'tot'; renderInforme(); }
+        function setRangoMes(k, i, v) {
+            const n = parseInt(v, 10);
+            rangoMes[k][i] = (v === '' || Number.isNaN(n)) ? null : Math.max(0, n);
+            renderInforme();
+        }
+        // Cada fila del tablero (Total / Directas / Indirectas) genera su propia selección de jóvenes
+        function seleccionesTablero(resMes) {
+            const base = resMes.filter(r => r.tipo !== 'egreso');
+            const campo = { tot: 'total', dir: 'directas', ind: 'indirectas' };
+            return ['tot', 'dir', 'ind'].filter(k => rangoMes[k][0] !== null || rangoMes[k][1] !== null).map(k => {
+                const [mn, mx] = rangoMes[k];
+                const lista = base.filter(r => (mn === null || r[campo[k]] >= mn) && (mx === null || r[campo[k]] <= mx))
+                    .sort((a, b) => b[campo[k]] - a[campo[k]] || a.nombre.localeCompare(b.nombre, 'es'));
+                return { k, rango: [mn, mx], lista };
+            });
+        }
+        // Conteo de las Observaciones: intervenciones del mes desde el día 1 hasta la fecha final del informe
+        function datosObservaciones(D) {
+            const hoy = getFechaLocal(), ref = D.hasta <= hoy ? D.hasta : hoy;
+            const intsObs = D.intsMes.filter(i => i.fecha <= ref);
+            const res = resumenMes(D.mes).filter(r => r.tipo !== 'egreso').map(r => {
+                const p = intsObs.filter(i => i.joven === r.nombre);
+                const d = p.filter(i => i.parametro === 'directa').length;
+                return { ...r, total: p.length, directas: d, indirectas: p.length - d };
+            });
+            return { ref, intsObs, res };
+        }
+        const OBS = { dir: '#00c8e0', indTot: '#ffbd59', ind: '#a98df0', tot: '#3ef07b' };
+        function textoRangoObs(k, [mn, mx]) {
+            const r = mn !== null && mx !== null ? `entre ${mn} y ${mx}` : mn !== null ? `${mn} o más` : `hasta ${mx}`;
+            return `${r} ${k === 'dir' ? 'intervenciones directas' : k === 'ind' ? 'intervenciones indirectas' : 'intervenciones'}`;
+        }
+        // Barras horizontales agrupadas: los jóvenes con valores tienen filas altas (barras visibles); los de 0 solo su nombre
+        function graficoBarrasSvg(items, series, rowBajo, rowAlto, fs, W = 700) {
+            const mr = 22, top = 4, axisH = fs + 12;
+            const maxLab = Math.max(1, ...items.map(i => i.label.length));
+            const fsV = Math.min(9, fs + 2.5);   // nombres de jóvenes con valores, un poco más grandes
+            const ml = Math.min(W * 0.42, Math.ceil(maxLab * fsV * 0.52) + 14);
+            const maxV = Math.max(1, ...items.flatMap(i => i.vals));
+            const paso = maxV <= 5 ? 1 : Math.ceil(maxV / 5);
+            const topV = Math.ceil(maxV / paso) * paso;
+            const iw = W - ml - mr, n = series.length;
+            const hs = items.map(it => it.vals.some(v => v > 0) ? rowAlto : rowBajo);
+            const H = top + hs.reduce((a, b) => a + b, 0) + axisH;
+            let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" role="img">`;
+            let y0 = top;
+            items.forEach((it, r) => {
+                if (hs[r] === rowAlto && it.vals.some(v => v > 0)) s += `<rect x="0" y="${y0}" width="${W}" height="${hs[r]}" fill="${r % 2 ? '#f6f8fb' : '#eef3f8'}"/>`;
+                y0 += hs[r];
+            });
+            for (let v = 0; v <= topV; v += paso) {
+                const x = ml + v / topV * iw;
+                s += `<line x1="${x}" x2="${x}" y1="${top}" y2="${H - axisH}" stroke="#c8c8c8" stroke-width="0.5"/><text x="${x}" y="${H - axisH + fs + 2}" font-size="${fs}" fill="#555" text-anchor="middle">${v}</text>`;
+            }
+            s += `<line x1="${ml}" x2="${ml}" y1="${top}" y2="${H - axisH}" stroke="#999" stroke-width="0.7"/>`;
+            y0 = top;
+            items.forEach((it, r) => {
+                const rh = hs[r], bh = Math.min(rh * 0.84 / n, 9), f2 = Math.max(6, Math.min(9, bh * 1.3)), yb = y0 + (rh - bh * n) / 2;
+                const lf = it.vals.some(v => v > 0) ? fsV : fs;
+                s += `<text x="${ml - 6}" y="${y0 + rh / 2 + lf * 0.35}" font-size="${lf}" fill="#222" text-anchor="end">${escHtml(it.label)}</text>`;
+                it.vals.forEach((v, j) => {
+                    if (!v) return;
+                    const y = yb + j * bh, w = v / topV * iw;
+                    s += `<rect x="${ml}" y="${y}" width="${w}" height="${bh}" fill="${series[j].c}"/><text x="${ml + w + 3}" y="${y + bh / 2 + f2 * 0.35}" font-size="${f2}" font-weight="700" fill="#222">${v}</text>`;
+                });
+                y0 += rh;
+            });
+            return s + '</svg>';
+        }
+        // Total: una barra apilada por joven (Directas | Indirectas | Totales), filas pegadas y números centrados en cada tramo
+        function graficoApiladoSvg(items, series, rowBajo, rowAlto, fs, W = 700) {
+            const mr = 14, top = 4, axisH = fs + 12;
+            const fsR = Math.max(6, Math.min(10, rowAlto * 0.62));
+            const maxLab = Math.max(1, ...items.map(i => i.label.length));
+            const ml = Math.min(W * 0.42, Math.ceil(maxLab * Math.max(fs, fsR) * 0.52) + 14);
+            const sumV = it => it.vals.reduce((a, b) => a + b, 0);
+            const maxV = Math.max(1, ...items.map(sumV));
+            const paso = maxV <= 8 ? 1 : Math.ceil(maxV / 8);
+            const topV = Math.ceil(maxV / paso) * paso;
+            const iw = W - ml - mr;
+            const hs = items.map(it => sumV(it) > 0 ? rowAlto : rowBajo);
+            const H = top + hs.reduce((a, b) => a + b, 0) + axisH;
+            let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block" role="img">`;
+            for (let v = 0; v <= topV; v += paso) {
+                const x = ml + v / topV * iw;
+                s += `<line x1="${x}" x2="${x}" y1="${top}" y2="${H - axisH}" stroke="#c8c8c8" stroke-width="0.5"/><text x="${x}" y="${H - axisH + fs + 2}" font-size="${fs}" fill="#555" text-anchor="middle">${v}</text>`;
+            }
+            let y0 = top;
+            items.forEach((it, r) => {
+                const rh = hs[r], valued = sumV(it) > 0, lf = valued ? fsR : fs;
+                s += `<text x="${ml - 6}" y="${y0 + rh / 2 + lf * 0.35}" font-size="${lf}" fill="#222" text-anchor="end">${escHtml(it.label)}</text>`;
+                let x = ml;
+                it.vals.forEach((v, j) => {
+                    if (!v) return;
+                    const w = v / topV * iw;
+                    s += `<rect x="${x}" y="${y0 + 0.6}" width="${w}" height="${rh - 1.2}" fill="${series[j].c}"><title>${escHtml(it.label)} — ${series[j].n}: ${v}</title></rect>`;
+                    if (w >= fsR * 0.9) s += `<text x="${x + w / 2}" y="${y0 + rh / 2 + fsR * 0.35}" font-size="${fsR}" fill="#1d2b36" text-anchor="middle">${v}</text>`;
+                    x += w;
+                });
+                y0 += rh;
+            });
+            return s + '</svg>';
+        }
+        function bloqueObservacion(s, fechaTxt, unidad, W = 700, info = '') {
+            const titulo = { tot: 'Jóvenes con menores intervenciones', dir: 'Jóvenes con bajas intervenciones directas', ind: 'Jóvenes con bajas intervenciones indirectas' }[s.k];
+            const n = s.lista.length;
+            const nota = notaExclusion.trim().replace(/[.\s]+$/, '');
+            const excl = nota ? `, ${escHtml(nota)}` : '';
+            const rango = textoRangoObs(s.k, s.rango);
+            const texto = n
+                ? `${n === 1 ? 'Se identificó <b>1</b> joven vigente que' : `Se identificaron <b>${n}</b> jóvenes vigentes que`}, al ${fechaTxt}, ${n === 1 ? 'presenta' : 'presentan'} ${rango} en sus totales${excl}.`
+                : `No se identificaron jóvenes vigentes que, al ${fechaTxt}, presenten ${rango} en sus totales.`;
+            const series = s.k === 'tot' ? [{ n: 'DIRECTAS', c: OBS.dir }, { n: 'INDIRECTAS', c: OBS.indTot }, { n: 'TOTALES', c: OBS.tot }]
+                : s.k === 'dir' ? [{ n: 'DIRECTAS', c: OBS.dir }] : [{ n: 'INDIRECTAS', c: OBS.ind }];
+            const items = s.lista.map(r => ({ label: r.nombre, vals: s.k === 'tot' ? [r.directas, r.indirectas, r.total] : s.k === 'dir' ? [r.directas] : [r.indirectas] }));
+            const fs = Math.max(6, Math.min(9, unidad * 0.85));
+            const ley = `<div class="obs-leg">${series.map(x => `<span><i style="background:${x.c}"></i>${x.n}</span>`).join('')}</div>`;
+            return `<div class="sel-bloque"><div class="obs-titulo">• ${titulo}:</div><div class="obs-texto">${texto}</div><div class="obs-periodo">${info}</div>${n ? ley + (s.k === 'tot' ? graficoApiladoSvg : graficoBarrasSvg)(items, series, unidad, s.hAlto, fs, W) : ''}</div>`;
+        }
+        function imprimirSeleccion() {
+            document.body.classList.add('solo-seleccion');
+            window.print();
+            document.body.classList.remove('solo-seleccion');
+        }
+        function limpiarRangosMes() { rangoMes = { tot: [null, null], dir: [null, null], ind: [null, null] }; renderInforme(); }
+        function presetBajoMeta() { rangoMes.tot = [null, META_MENSUAL - 1]; renderInforme(); }
+        function presetCeroUno() { rangoMes = { tot: [0, 1], dir: [0, 1], ind: [0, 1] }; renderInforme(); }
+        let notaExclusion = '';
+        function setNotaExclusion(v) { notaExclusion = v; renderInforme(); }
+        // Al imprimir, los desplegables del informe se abren para que salgan los nombres
+        window.addEventListener('beforeprint', () => document.querySelectorAll('#informeContenido details').forEach(d => { d.dataset.abierto = d.open ? '1' : ''; d.open = true; }));
+        window.addEventListener('afterprint', () => { document.body.classList.remove('solo-seleccion'); document.querySelectorAll('#informeContenido details').forEach(d => { d.open = !!d.dataset.abierto; }); });
+        let infDesde = '', infHasta = '';   // período del informe (YYYY-MM-DD)
+
+        function parseISO(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }
+        function toISO(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+        function sumarDias(iso, n) { const d = parseISO(iso); d.setDate(d.getDate() + n); return toISO(d); }
+        function lunesDe(iso) { const d = parseISO(iso); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return toISO(d); }
+        function pct(a, b) { return b ? (a / b * 100).toFixed(1) + '%' : '0%'; }
+        function barraPct(d, i) {
+            const t = d + i; const pd = t ? d / t * 100 : 0;
+            return `<div class="pct-bar" title="${pct(d, t)} directas / ${pct(i, t)} indirectas"><span class="d" style="width:${pd}%"></span><span class="i" style="width:${t ? 100 - pd : 0}%"></span></div>`;
+        }
+        function contarPor(lista, fn) {
+            const m = {};
+            lista.forEach(x => { const k = fn(x); m[k] = (m[k] || 0) + 1; });
+            return m;
+        }
+
+        function abrirInforme() {
+            if (!infDesde) { infDesde = infHasta = getFechaLocal(); }
+            document.getElementById('modalInforme').classList.add('open');
+            renderInforme();
+        }
+        function cerrarInforme() { document.getElementById('modalInforme').classList.remove('open'); }
+        function cambiarFechasInforme() {
+            let d = document.getElementById('infDesde').value, h = document.getElementById('infHasta').value;
+            if (!d && !h) return;
+            if (!d) d = h;
+            if (!h) h = d;
+            if (d > h) [d, h] = [h, d];
+            infDesde = d; infHasta = h;
+            renderInforme();
+        }
+        function periodoRapido(t) {
+            const hoy = getFechaLocal();
+            if (t === 'hoy') { infDesde = infHasta = hoy; }
+            else if (t === 'ayer') { infDesde = infHasta = sumarDias(hoy, -1); }
+            else if (t === '7d') { infDesde = sumarDias(hoy, -6); infHasta = hoy; }
+            else if (t === 'mes') { infDesde = hoy.slice(0, 8) + '01'; infHasta = hoy; }
+            renderInforme();
+        }
+        function diasEntre(a, b) { return Math.round((parseISO(b) - parseISO(a)) / 86400000) + 1; }
+
+        function datosInforme() {
+            const hoy = getFechaLocal();
+            const desde = infDesde || hoy, hasta = infHasta || hoy;
+            const nDias = diasEntre(desde, hasta);
+            const ints = intervenciones.filter(i => i.fecha >= desde && i.fecha <= hasta);
+            const prevInts = intervenciones.filter(i => i.fecha >= sumarDias(desde, -nDias) && i.fecha <= sumarDias(desde, -1));
+            const mes = (hasta < hoy ? hasta : hoy).slice(0, 7);
+            const intsMes = intervencionesDelMes(mes);
+            const prevDentro = sumarDias(desde, -nDias) >= mes + '-01';   // solo se compara dentro del mismo mes
+
+            // Por joven (período)
+            const nombres = nombresHistorial().filter(n => !esEgresado(n) || ints.some(i => i.joven === n));
+            const porJoven = nombres.map(n => {
+                const propias = ints.filter(i => i.joven === n);
+                const d = propias.filter(i => i.parametro === 'directa').length;
+                return { nombre: n, total: propias.length, directas: d, indirectas: propias.length - d, tipos: contarPor(propias, i => i.tipo), regs: propias };
+            });
+            // Por tipo (semana)
+            const tiposNombres = [...new Set([...tipos.map(t => t.nombre), ...ints.map(i => i.tipo), ...intsMes.map(i => i.tipo)])];
+            const parametroDe = n => { const t = tipos.find(x => x.nombre === n); if (t) return t.parametro; const i = intervenciones.find(x => x.tipo === n); return i ? i.parametro : ''; };
+            const cuentaTipoSem = contarPor(ints, i => i.tipo);
+            const cuentaTipoMes = contarPor(intsMes, i => i.tipo);
+            return { desde, hasta, nDias, prevDentro, ints, prevInts, mes, intsMes, porJoven, tiposNombres, parametroDe, cuentaTipoSem, cuentaTipoMes };
+        }
+
+        // ----- Gráficos del informe (SVG/CSS sin librerías externas) -----
+        const COL_D = '#28a745', COL_I = '#ffc107';
+
+        function graficoDona(d, i) {
+            const t = d + i, r = 45, C = 2 * Math.PI * r;
+            const arco = (v, off, color) => v ? `<circle cx="60" cy="60" r="${r}" fill="none" stroke="${color}" stroke-width="22" stroke-dasharray="${v / t * C} ${C - v / t * C}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>` : '';
+            return `<div class="dona-wrap">
+                <svg viewBox="0 0 120 120" role="img">
+                    <circle cx="60" cy="60" r="${r}" fill="none" stroke="#e9ecef" stroke-width="22"/>
+                    ${t ? arco(d, 0, COL_D) + arco(i, d / t * C, COL_I) : ''}
+                    <text x="60" y="58" text-anchor="middle" font-size="22" font-weight="700" fill="#495057">${t}</text>
+                    <text x="60" y="73" text-anchor="middle" font-size="9" fill="#6c757d">total</text>
+                </svg>
+                <div class="chart-leg" style="flex-direction:column;gap:6px;margin:0;font-size:0.85em;">
+                    <span><i style="background:${COL_D}"></i>Directas: <b>${d}</b> (${pct(d, t)})</span>
+                    <span><i style="background:${COL_I}"></i>Indirectas: <b>${i}</b> (${pct(i, t)})</span>
+                </div></div>`;
+        }
+
+        // Columnas apiladas (directas abajo, indirectas arriba). items: [{label, sub, d, i}]
+        function graficoColumnas(items) {
+            const W = 480, H = 190, ml = 30, mr = 8, mt = 16, mb = 32;
+            const max = Math.max(1, ...items.map(x => x.d + x.i));
+            const paso = max <= 5 ? 1 : Math.ceil(max / 5);
+            const top = Math.ceil(max / paso) * paso;
+            const iw = W - ml - mr, ih = H - mt - mb, bw = iw / items.length, barW = Math.min(36, bw * 0.6);
+            const skip = Math.max(1, Math.ceil(22 / bw));
+            let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;max-height:230px" role="img">`;
+            for (let v = 0; v <= top; v += paso) {
+                const y = mt + ih - v / top * ih;
+                s += `<line x1="${ml}" x2="${W - mr}" y1="${y}" y2="${y}" stroke="#dee2e6"/><text x="${ml - 5}" y="${y + 3}" font-size="9" fill="#6c757d" text-anchor="end">${v}</text>`;
+            }
+            items.forEach((it, k) => {
+                const cx = ml + k * bw + bw / 2, x = cx - barW / 2;
+                const hd = it.d / top * ih, hi = it.i / top * ih;
+                const yD = mt + ih - hd, yI = yD - hi, t = it.d + it.i;
+                if (it.d) s += `<rect x="${x}" y="${yD}" width="${barW}" height="${hd}" fill="${COL_D}"><title>${escHtml(it.label)}: ${it.d} directas</title></rect>`;
+                if (it.i) s += `<rect x="${x}" y="${yI}" width="${barW}" height="${hi}" fill="${COL_I}"><title>${escHtml(it.label)}: ${it.i} indirectas</title></rect>`;
+                if (it.d && barW >= 16 && hd >= 12) s += `<text x="${cx}" y="${yD + hd / 2 + 3}" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">${it.d}</text>`;
+                if (it.i && barW >= 16 && hi >= 12) s += `<text x="${cx}" y="${yI + hi / 2 + 3}" font-size="9" font-weight="700" fill="#333" text-anchor="middle">${it.i}</text>`;
+                if ((items.length - 1 - k) % skip === 0) s += `<text x="${cx}" y="${yI - 4}" font-size="10" font-weight="700" fill="${t ? '#495057' : '#adb5bd'}" text-anchor="middle">${t}</text>`;
+                s += `<text x="${cx}" y="${H - 17}" font-size="10" fill="#495057" text-anchor="middle">${escHtml(it.label)}</text>`;
+                if (it.sub) s += `<text x="${cx}" y="${H - 6}" font-size="8.5" fill="#6c757d" text-anchor="middle">${escHtml(it.sub)}</text>`;
+            });
+            return s + '</svg>';
+        }
+
+        // Barras horizontales. items: [{label, segs:[{v,color,nombre}], valor?}]; meta: línea punteada opcional
+        function graficoBarrasH(items, meta, opts = {}) {
+            if (!items.length) return '<div class="inf-note">Sin datos</div>';
+            const tot = it => it.segs.reduce((a, s) => a + s.v, 0);
+            const max = Math.max(1, meta || 0, ...items.map(tot));
+            return `<div class="bh ${opts.ancho ? 'ancho' : ''}">` + items.map(it => `<div class="bh-row">
+                <div class="bh-label" title="${escHtml(it.label)}">${escHtml(it.label)}</div>
+                <div class="bh-track">${it.segs.filter(s => s.v > 0).map(s => `<span class="bh-seg" style="width:${s.v / max * 100}%;background:${s.color}" title="${escHtml(s.nombre)}: ${s.v}">${s.v / max * 100 >= 7 ? s.v : ''}</span>`).join('')}${meta ? `<i class="bh-meta" style="left:${meta / max * 100}%"></i>` : ''}</div>
+                <div class="bh-val">${it.valor != null ? it.valor : tot(it)}</div></div>`).join('') + '</div>';
+        }
+
+        function renderInforme() {
+            if (infDesde && infDesde < fechaCorte()) asegurarHistorial();
+            const modal = document.getElementById('modalInforme');
+            if (!modal || !modal.classList.contains('open')) return;
+            const D = datosInforme();
+            document.getElementById('infDesde').value = D.desde;
+            document.getElementById('infHasta').value = D.hasta;
+
+            const total = D.ints.length;
+            const dir = D.ints.filter(i => i.parametro === 'directa').length;
+            const ind = total - dir;
+            const listas = D.ints.filter(i => i.estado === 'lista').length;
+            const atendidos = D.porJoven.filter(j => j.total > 0).length;
+            const prevTotal = D.prevInts.length;
+            const dif = total - prevTotal;
+            const variacion = !D.prevDentro
+                ? `<span class="var-nota">Sin comparación: el período anterior cae fuera de ${nombreMes(D.mes)}</span>`
+                : prevTotal === 0
+                ? (total ? '<span class="var-up">▲ sin datos del período anterior</span>' : '—')
+                : `<span class="${dif >= 0 ? 'var-up' : 'var-down'}">${dif >= 0 ? '▲' : '▼'} ${Math.abs(dif)} (${(dif / prevTotal * 100).toFixed(0)}%) vs período anterior (${prevTotal})</span>`;
+
+            // --- por joven ---
+            const conAct = D.porJoven.filter(j => j.total > 0).sort((a, b) => b.total - a.total || a.nombre.localeCompare(b.nombre, 'es'));
+            const sinAct = D.porJoven.filter(j => j.total === 0).map(j => j.nombre).sort((a, b) => a.localeCompare(b, 'es')).map(escHtml);
+            // Detalle por intervención: fecha, tipo, fecha de registro y plazo de 72 h
+            const detalleRegistros = j => {
+                const regs = [...(j.regs || [])].sort((a, b) => a.fecha.localeCompare(b.fecha));
+                const fuera = regs.filter(i => ['fuera', 'vencido'].includes(estadoPlazo(i).tipo)).length;
+                return `<details class="reg-det"><summary>📋 Ver registros (${regs.length})${fuera ? `<span class="reg-fuera">⛔ ${fuera} fuera de plazo</span>` : ''}</summary>
+                    <table class="reg-mini"><thead><tr><th>Fecha</th><th>Tipo</th><th>Fecha de registro</th><th>Estado</th><th>Plazo 72 h</th></tr></thead><tbody>
+                    ${regs.map(i => `<tr><td>${formatearFechaMostrar(i.fecha)}</td><td>${escHtml(i.tipo)}</td><td>${i.fechaRegistro ? fechaHoraCorta(i.fechaRegistro) : 'Sin dato'}</td><td>${i.estado === 'lista' ? '✅ Lista' : '⏳ Pendiente'}</td><td>${textoPlazo(i)}</td></tr>`).join('')}
+                    </tbody></table></details>`;
+            };
+            const filasJov = conAct.map(j => `<tr>
+                <td><button class="joven-link" onclick="abrirHistorialJoven('${encArg(j.nombre)}')">${escHtml(j.nombre)}</button></td>
+                <td><strong>${j.total}</strong></td>
+                <td>${j.directas} <small>(${pct(j.directas, j.total)})</small></td>
+                <td>${j.indirectas} <small>(${pct(j.indirectas, j.total)})</small></td>
+                <td>${barraPct(j.directas, j.indirectas)}</td>
+                <td>${Object.entries(j.tipos).sort((a, b) => b[1] - a[1]).map(([t, n]) => `<span class="tipo-chip">${escHtml(t)}: ${n}</span>`).join('')}</td>
+                <td>${detalleRegistros(j)}</td>
+            </tr>`).join('');
+
+            // --- por tipo ---
+            const filaTipo = (t, c, base) => `<tr><td>${escHtml(t)}</td><td><span class="tipo-badge ${D.parametroDe(t) === 'directa' ? 'badge-directa' : 'badge-indirecta'}">${D.parametroDe(t) === 'directa' ? 'Directa' : 'Indirecta'}</span></td><td><strong>${c}</strong></td><td>${pct(c, base)}</td></tr>`;
+            const tiposSem = Object.entries(D.cuentaTipoSem).sort((a, b) => b[1] - a[1]);
+            const filasTipo = tiposSem.map(([t, c]) => filaTipo(t, c, total)).join('');
+            const tiposMes = Object.entries(D.cuentaTipoMes).sort((a, b) => b[1] - a[1]);
+            const filasTipoMes = tiposMes.map(([t, c]) => filaTipo(t, c, D.intsMes.length)).join('');
+
+            // --- mes ---
+            const resMes = resumenMes(D.mes);
+            const mesTotal = D.intsMes.length;
+            const mesDir = D.intsMes.filter(i => i.parametro === 'directa').length;
+            const mesInc = resMes.filter(r => r.tipo === 'incumple').length;
+            const mesRiesgo = resMes.filter(r => r.tipo === 'riesgo').length;
+            const mesFlex = resMes.filter(r => r.tipo === 'flex').length;
+            const campoM = { tot: 'total', dir: 'directas', ind: 'indirectas' }[filtroMenores];
+            const etiquetaM = { tot: 'intervenciones totales', dir: 'intervenciones directas', ind: 'intervenciones indirectas' }[filtroMenores];
+            const obs = datosObservaciones(D);
+            const selecciones = seleccionesTablero(obs.res);
+            const hayRango = selecciones.length > 0;
+            const resMesTodos = [...resMes].sort((a, b) => b.total - a.total || a.nombre.localeCompare(b.nombre, 'es'));
+            const refFecha = obs.ref;
+            const fechaLarga = `${refFecha.slice(8)} de ${MESES[+refFecha.slice(5, 7) - 1]} ${refFecha.slice(0, 4)}`;
+            const dObs = obs.intsObs.filter(i => i.parametro === 'directa').length;
+            const infoObs = `Período contado: ${formatearFechaMostrar(D.mes + '-01')} al ${formatearFechaMostrar(refFecha)} · ${obs.intsObs.length} intervenciones en total (${dObs} directas · ${obs.intsObs.length - dObs} indirectas)`;
+            // Total a todo el ancho; Directas e Indirectas lado a lado, para que todo quepa en una hoja
+            const sT = selecciones.find(x => x.k === 'tot'), sD = selecciones.find(x => x.k === 'dir'), sI = selecciones.find(x => x.k === 'ind');
+            const par = !!sD && !!sI;
+            selecciones.forEach(s => {
+                const v = s.lista.filter(r => (s.k === 'tot' ? r.total : s.k === 'dir' ? r.directas : r.indirectas) > 0).length;
+                s.nVal = v;
+                s.hAlto = s.k === 'tot' ? (v <= 20 ? 16 : v <= 32 ? 13 : 10) : (v <= 20 ? 11 : 8);
+            });
+            const altoSel = (s, u) => s ? s.nVal * s.hAlto + (s.lista.length - s.nVal) * u + 40 : 0;
+            let unidad = 6.5;
+            for (let u = 14; u >= 6.5; u -= 0.5) {
+                const H = altoSel(sT, u) + (par ? Math.max(altoSel(sD, u), altoSel(sI, u)) : altoSel(sD, u) + altoSel(sI, u));
+                if (H <= 700) { unidad = u; break; }
+            }
+            const bl = k => { const s = selecciones.find(x => x.k === k); return s ? bloqueObservacion(s, fechaLarga, unidad, par && k !== 'tot' ? 350 : 700, infoObs) : ''; };
+            const bloquesObs = bl('tot') + (par ? `<div class="obs-dos">${bl('dir')}${bl('ind')}</div>` : bl('dir') + bl('ind'));
+
+            // --- detalle ---
+            const filasDet = [...D.ints].sort((a, b) => b.fecha.localeCompare(a.fecha) || a.joven.localeCompare(b.joven, 'es')).map(i => `<tr>
+                <td>${formatearFechaMostrar(i.fecha)}</td><td>${escHtml(i.joven)}</td>
+                <td>${(i.interventores || []).map(escHtml).join('<br>')}</td>
+                <td><span class="tipo-badge ${i.parametro === 'directa' ? 'badge-directa' : 'badge-indirecta'}">${escHtml(i.tipo)}</span></td>
+                <td>${i.estado === 'lista' ? '✅ Lista' : '⏳ Pendiente'}</td></tr>`).join('');
+
+            // --- gráficos ---
+            const leyDI = `<div class="chart-leg"><span><i style="background:${COL_D}"></i>Directas</span><span><i style="background:${COL_I}"></i>Indirectas</span></div>`;
+            const sinDatos = '<div class="inf-note">Sin intervenciones en el período</div>';
+            const ABR_DIA = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            const sumTot = arr => arr.reduce((a, x) => a + x.d + x.i, 0);
+            let gDias, tituloDias;
+            if (D.nDias <= 31) {
+                tituloDias = 'Intervenciones por día';
+                gDias = Array.from({ length: D.nDias }, (_, k) => {
+                    const f = sumarDias(D.desde, k);
+                    const delDia = D.ints.filter(i => i.fecha === f);
+                    const d = delDia.filter(i => i.parametro === 'directa').length;
+                    return D.nDias <= 14
+                        ? { label: ABR_DIA[parseISO(f).getDay()], sub: f.slice(8) + '/' + f.slice(5, 7), d, i: delDia.length - d }
+                        : { label: f.slice(8), sub: '', d, i: delDia.length - d };
+                });
+            } else {
+                tituloDias = 'Intervenciones por mes';
+                gDias = [];
+                let m = D.desde.slice(0, 7);
+                const mFin = D.hasta.slice(0, 7);
+                while (m <= mFin) {
+                    const delMes = D.ints.filter(i => i.fecha.slice(0, 7) === m);
+                    const d = delMes.filter(i => i.parametro === 'directa').length;
+                    gDias.push({ label: MESES[+m.slice(5) - 1].slice(0, 3), sub: m.slice(0, 4), d, i: delMes.length - d });
+                    const [y, mo] = m.split('-').map(Number);
+                    m = mo === 12 ? `${y + 1}-01` : `${y}-${String(mo + 1).padStart(2, '0')}`;
+                }
+            }
+            // Tendencia solo dentro del mes: acumulado día a día desde el día 1
+            const mesIni = D.mes + '-01';
+            const ultDia = `${D.mes}-${String(new Date(+D.mes.slice(0, 4), +D.mes.slice(5), 0).getDate()).padStart(2, '0')}`;
+            const finT = [D.hasta, getFechaLocal(), ultDia].sort()[0];
+            const gMesDia = Array.from({ length: Math.max(0, diasEntre(mesIni, finT)) }, (_, k) => {
+                const f = sumarDias(mesIni, k);
+                const hasta = D.intsMes.filter(i => i.fecha <= f);
+                const d = hasta.filter(i => i.parametro === 'directa').length;
+                return { label: f.slice(8), sub: '', d, i: hasta.length - d };
+            });
+            const colEstado = { ok: '#155724', incumple: '#dc3545', riesgo: '#dc3545', flex: '#4a2c82', curso: '#495057', egreso: '#6c757d' };
+            const mkSegs = r => ({
+                label: r.nombre,
+                segs: [{ v: r.directas, color: COL_D, nombre: 'Directas' }, { v: r.indirectas, color: COL_I, nombre: 'Indirectas' }],
+                valor: `<span style="color:${colEstado[r.tipo]}">${r.total}/${META_MENSUAL}</span>`
+            });
+            const gMesJoven = resMesTodos.map(mkSegs);
+            const leyMeta = leyDI.replace('</div>', `<span><i class="meta-i"></i>Meta mínima (${META_MENSUAL})</span></div>`);
+            const gTipoMes = tiposMes.map(([t, c]) => ({ label: t, segs: [{ v: c, color: D.parametroDe(t) === 'directa' ? COL_D : COL_I, nombre: D.parametroDe(t) === 'directa' ? 'Directa' : 'Indirecta' }] }));
+            const gJoven = conAct.map(j => ({ label: j.nombre, segs: [{ v: j.directas, color: COL_D, nombre: 'Directas' }, { v: j.indirectas, color: COL_I, nombre: 'Indirectas' }] }));
+            const gTipo = tiposSem.map(([t, c]) => ({ label: t, segs: [{ v: c, color: D.parametroDe(t) === 'directa' ? COL_D : COL_I, nombre: D.parametroDe(t) === 'directa' ? 'Directa' : 'Indirecta' }] }));
+            const tot = n => `<span class="chart-total">Total: ${n}</span>`;
+            const bloqueGraficos = `<div class="chart-grid">
+                <div class="chart-card"><h4><span>Directas vs indirectas — período</span>${tot(total)}</h4>${graficoDona(dir, ind)}</div>
+                <div class="chart-card"><h4><span>Directas vs indirectas — ${nombreMes(D.mes)}</span>${tot(mesTotal)}</h4>${graficoDona(mesDir, mesTotal - mesDir)}</div>
+                <div class="chart-card"><h4><span>${tituloDias}</span>${tot(sumTot(gDias))}</h4>${graficoColumnas(gDias)}${leyDI}</div>
+                <div class="chart-card"><h4><span>Tendencia de ${nombreMes(D.mes)} (acumulado día a día)</span>${tot(gMesDia.length ? gMesDia[gMesDia.length - 1].d + gMesDia[gMesDia.length - 1].i : 0)}</h4>${graficoColumnas(gMesDia)}${leyDI}</div>
+                <div class="chart-card"><h4><span>Por joven</span>${tot(total)}</h4>${total ? graficoBarrasH(gJoven) + leyDI : sinDatos}</div>
+                <div class="chart-card"><h4><span>Por tipo de intervención</span>${tot(total)}</h4>${total ? graficoBarrasH(gTipo) + leyDI : sinDatos}</div>
+            </div>`;
+
+            const vacio = '<div class="inf-note">No hay intervenciones registradas en este período.</div>';
+            document.getElementById('informeContenido').innerHTML = `
+                <div class="inf-head">
+                    <h2>Informe de intervenciones: ${D.desde === D.hasta ? formatearFechaMostrar(D.desde) : formatearFechaMostrar(D.desde) + ' al ' + formatearFechaMostrar(D.hasta)}</h2>
+                    <div>${escHtml(document.getElementById('programTitle').textContent)} · Generado el ${formatearFechaMostrar(getFechaLocal())}</div>
+                </div>
+
+                <h3 class="hist-sub">📊 1. Resumen del período</h3>
+                <div class="hist-stats">
+                    <div class="hist-stat"><b>${total}</b><span>Intervenciones</span></div>
+                    <div class="hist-stat"><b>${dir}</b><span>Directas (${pct(dir, total)})</span></div>
+                    <div class="hist-stat"><b>${ind}</b><span>Indirectas (${pct(ind, total)})</span></div>
+                    <div class="hist-stat"><b>${listas}</b><span>Listas</span></div>
+                    <div class="hist-stat"><b>${total - listas}</b><span>Pendientes</span></div>
+                    <div class="hist-stat"><b>${atendidos}</b><span>de ${D.porJoven.length} jóvenes atendidos</span></div>
+                </div>
+                ${barraPct(dir, ind)}
+                <div class="pct-legend"><b class="d">■ Directas ${pct(dir, total)}</b> &nbsp; <b class="i">■ Indirectas ${pct(ind, total)}</b> &nbsp;·&nbsp; ${variacion}</div>
+
+                <h3 class="hist-sub">📈 2. Gráficos</h3>
+                ${bloqueGraficos}
+
+                <h3 class="hist-sub">👤 3. Por joven: directas e indirectas, y detalle por tipo</h3>
+                <div class="inf-note">Plazo de registro: <strong>72 horas</strong> desde el día de la intervención (aplica a intervenciones desde el 01/10/2026). Si se registra después, queda <strong>fuera de plazo</strong>.</div>
+                ${total ? `<div class="table-container"><table>
+                    <thead><tr><th>Joven</th><th>Total</th><th>Directas</th><th>Indirectas</th><th>Proporción</th><th>Por tipo de intervención</th><th>Fecha de registro y plazo</th></tr></thead>
+                    <tbody>${filasJov}</tbody></table></div>
+                    ${sinAct.length ? `<details class="sin-act"><summary>😴 Sin intervenciones en el período (${sinAct.length}) — ver nombres</summary><div class="sin-grid">${sinAct.map(n => `<span>${n}</span>`).join('')}</div></details>` : ''}` : vacio}
+
+                <h3 class="hist-sub">📅 4. Acumulado de ${nombreMes(D.mes)} (totalidad del mes)</h3>
+                <div class="hist-stats">
+                    <div class="hist-stat"><b>${mesTotal}</b><span>Total del mes</span></div>
+                    <div class="hist-stat"><b>${mesDir}</b><span>Directas (${pct(mesDir, mesTotal)})</span></div>
+                    <div class="hist-stat"><b>${mesTotal - mesDir}</b><span>Indirectas (${pct(mesTotal - mesDir, mesTotal)})</span></div>
+                    <div class="hist-stat ${mesInc ? 'mal' : ''}"><b>${mesInc}</b><span>Incumplimientos</span></div>
+                    <div class="hist-stat"><b>${mesRiesgo}</b><span>En riesgo</span></div>
+                    <div class="hist-stat"><b>${mesFlex}</b><span>Flexibilizados</span></div>
+                </div>
+                ${barraPct(mesDir, mesTotal - mesDir)}
+                <div class="pct-legend"><b class="d">■ Directas ${pct(mesDir, mesTotal)}</b> &nbsp; <b class="i">■ Indirectas ${pct(mesTotal - mesDir, mesTotal)}</b></div>
+                <div class="chart-grid">
+                    <div class="chart-card"><h4><span>Por joven — ${nombreMes(D.mes)}</span>${tot(mesTotal)}</h4>${gMesJoven.length ? graficoBarrasH(gMesJoven, META_MENSUAL) + leyMeta : '<div class="inf-note">Sin jóvenes</div>'}</div>
+                    <div class="chart-card"><h4><span>Por tipo — ${nombreMes(D.mes)}</span>${tot(mesTotal)}</h4>${mesTotal ? graficoBarrasH(gTipoMes) + leyDI : sinDatos}</div>
+                </div>
+
+                <div id="seccionSeleccion" class="${hayRango ? 'sel-pagina' : ''}">
+                    <h3 class="hist-sub ${hayRango ? '' : 'no-print'}">🎛️ 5. Observaciones — ${nombreMes(D.mes)}</h3>
+                    <div class="tablero no-print">
+                        <div class="tablero-titulo">🎛️ Tablero: cada fila genera su propio gráfico en una sola hoja (deja vacío para no usar esa fila)</div>
+                        <div class="tablero-grid">
+                            ${[['tot', 'Total'], ['dir', 'Directas'], ['ind', 'Indirectas']].map(([k, t]) => `<div class="tablero-fila"><span>${t}</span>
+                                <label>desde <input type="number" min="0" value="${rangoMes[k][0] === null ? '' : rangoMes[k][0]}" onchange="setRangoMes('${k}', 0, this.value)"></label>
+                                <label>hasta <input type="number" min="0" value="${rangoMes[k][1] === null ? '' : rangoMes[k][1]}" onchange="setRangoMes('${k}', 1, this.value)"></label></div>`).join('')}
+                            <div class="tablero-fila"><span>Nota</span>
+                                <input type="text" style="flex:1;min-width:240px;width:auto;" value="${escHtml(notaExclusion)}" placeholder="opcional: para este análisis se excluye a 1 joven con ingreso sin contacto" onchange="setNotaExclusion(this.value)"></div>
+                        </div>
+                        <div class="tablero-acciones">
+                            <button class="btn-small" style="background:#fd7e14" onclick="presetCeroUno()">0 a 1 en las tres</button>
+                            <button class="btn-small" style="background:#fd7e14" onclick="presetBajoMeta()">Total menor a ${META_MENSUAL}</button>
+                            <button class="btn-small" style="background:#6c757d" onclick="limpiarRangosMes()">Limpiar filtro</button>
+                            ${hayRango ? '<button class="btn-small btn-excel-joven" onclick="imprimirSeleccion()">🖨️ Imprimir solo esta hoja</button>' : ''}
+                        </div>
+                    </div>
+                    ${hayRango ? bloquesObs : '<div class="inf-note no-print">Define un rango en el tablero: los gráficos de Total, Directas e Indirectas aparecerán juntos en una hoja propia y se imprimirán dentro del informe.</div>'}
+                </div>
+
+                <div class="inf-note">Las intervenciones se agrupan por la <strong>fecha de la intervención</strong> en el rango de fechas elegido. El acumulado y el cumplimiento mensual corresponden al mes de la fecha final y cuentan todas las intervenciones del mes, estén pendientes o listas.</div>`;
+        }
+
+        function exportarInforme() {
+            const D = datosInforme();
+            const q = s => `"${String(s == null ? '' : s).replace(/"/g, '""')}"`;
+            const total = D.ints.length;
+            const dir = D.ints.filter(i => i.parametro === 'directa').length;
+            const nomEst = { ok: 'Cumple', incumple: 'Incumplimiento', riesgo: 'En riesgo', flex: 'Flexibilizado', curso: 'En curso', egreso: 'Egresado' };
+            let csv = `Informe de intervenciones ${formatearFechaMostrar(D.desde)} al ${formatearFechaMostrar(D.hasta)}\n\n`;
+            csv += `RESUMEN\nTotal,Directas,% Directas,Indirectas,% Indirectas,Listas,Pendientes,Total período anterior (solo dentro del mes)\n`;
+            csv += [total, dir, pct(dir, total), total - dir, pct(total - dir, total), D.ints.filter(i => i.estado === 'lista').length, D.ints.filter(i => i.estado !== 'lista').length, D.prevDentro ? D.prevInts.length : 'N/A'].join(',') + '\n';
+
+            csv += `\nPOR JOVEN\nJoven,Total,Directas,% Directas,Indirectas,% Indirectas\n`;
+            D.porJoven.sort((a, b) => b.total - a.total || a.nombre.localeCompare(b.nombre, 'es')).forEach(j => {
+                csv += [q(j.nombre), j.total, j.directas, pct(j.directas, j.total), j.indirectas, pct(j.indirectas, j.total)].join(',') + '\n';
+            });
+
+            csv += `\nJOVEN POR TIPO\nJoven,${D.tiposNombres.map(q).join(',')}\n`;
+            D.porJoven.filter(j => j.total > 0).forEach(j => {
+                csv += [q(j.nombre), ...D.tiposNombres.map(t => j.tipos[t] || 0)].join(',') + '\n';
+            });
+
+            const mesTotal = D.intsMes.length, mesDir = D.intsMes.filter(i => i.parametro === 'directa').length;
+            csv += `\nACUMULADO DE ${nombreMes(D.mes).toUpperCase()}\nTotal mes,Directas,% Directas,Indirectas,% Indirectas\n`;
+            csv += [mesTotal, mesDir, pct(mesDir, mesTotal), mesTotal - mesDir, pct(mesTotal - mesDir, mesTotal)].join(',') + '\n';
+            csv += `\nCUMPLIMIENTO MENSUAL POR JOVEN\nJoven,Total mes,Directas,Indirectas,Estado,Motivo flexibilización\n`;
+            resumenMes(D.mes).forEach(r => {
+                csv += [q(r.nombre), r.total, r.directas, r.indirectas, q(nomEst[r.tipo]), q(r.flex ? r.flex.motivo : '')].join(',') + '\n';
+            });
+            csv += `\nPOR TIPO (mes)\nTipo,Parámetro,Cantidad,% del mes\n`;
+            Object.entries(D.cuentaTipoMes).sort((a, b) => b[1] - a[1]).forEach(([t, c]) => {
+                csv += [q(t), q(D.parametroDe(t)), c, pct(c, mesTotal)].join(',') + '\n';
+            });
+
+            const tituloSel = { tot: 'TOTAL', dir: 'DIRECTAS', ind: 'INDIRECTAS' };
+            seleccionesTablero(datosObservaciones(D).res).forEach(s => {
+                csv += `\nSELECCIÓN ${tituloSel[s.k]} (${nombreMes(D.mes)} hasta ${formatearFechaMostrar(datosObservaciones(D).ref)})\nCriterio,${q(textoRangoObs(s.k, s.rango))}\nJoven,Total,Directas,Indirectas\n`;
+                s.lista.forEach(r => { csv += [q(r.nombre), r.total, r.directas, r.indirectas].join(',') + '\n'; });
+            });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv' }));
+            link.download = `informe_${D.desde}_${D.hasta}.csv`;
+            link.click();
+        }
+
+        // ----- Clave para archivar / desarchivar -----
+        const CLAVE_ARCHIVO = '1301';
+        let claveResolver = null;
+        function pedirClave(texto) {
+            return new Promise(resolve => {
+                claveResolver = resolve;
+                document.getElementById('claveTexto').textContent = texto || 'Ingresa la clave para continuar.';
+                const inp = document.getElementById('claveInput');
+                inp.value = ''; inp.classList.remove('error');
+                document.getElementById('claveError').textContent = '';
+                document.getElementById('modalClave').classList.add('open');
+                setTimeout(() => inp.focus(), 50);
+            });
+        }
+        function confirmarClave() {
+            const inp = document.getElementById('claveInput');
+            if (inp.value === CLAVE_ARCHIVO) { resolverClave(true); return; }
+            inp.classList.add('error');
+            document.getElementById('claveError').textContent = 'Clave incorrecta, intenta de nuevo.';
+            inp.value = ''; inp.focus();
+        }
+        function resolverClave(ok) {
+            document.getElementById('modalClave').classList.remove('open');
+            if (claveResolver) { const r = claveResolver; claveResolver = null; r(!!ok); }
+        }
+
+        // ----- Archivo mensual de intervenciones -----
+        let verArchivadas = false;
+
+        function actualizarBotonArchivadas() {
+            const b = document.getElementById('btnVerArchivadas');
+            if (!b) return;
+            const n = intervenciones.filter(i => i.archivado).length;
+            b.textContent = verArchivadas ? `🗃️ Ocultar archivadas (${n})` : `🗃️ Ver archivadas (${n})`;
+            b.style.background = verArchivadas ? '#6c757d' : '#667eea';
+        }
+        function toggleVerArchivadas() { verArchivadas = !verArchivadas; if (verArchivadas) asegurarHistorial(); actualizarTabla(); }
+        function abrirArchivo() { asegurarHistorial(); document.getElementById('modalArchivo').classList.add('open'); renderArchivo(); }
+        function cerrarArchivo() { document.getElementById('modalArchivo').classList.remove('open'); }
+
+        function resumenArchivo() {
+            const meses = {};
+            intervenciones.forEach(i => {
+                const m = (i.fecha || '').slice(0, 7);
+                if (!m) return;
+                const r = meses[m] || (meses[m] = { mes: m, total: 0, archivadas: 0, activas: 0, pendientes: 0 });
+                r.total++;
+                if (i.archivado) r.archivadas++;
+                else { r.activas++; if (i.estado !== 'lista') r.pendientes++; }
+            });
+            return Object.values(meses).sort((a, b) => b.mes.localeCompare(a.mes));
+        }
+
+        function renderArchivo() {
+            const modal = document.getElementById('modalArchivo');
+            if (!modal || !modal.classList.contains('open')) return;
+            const meses = resumenArchivo();
+            const actual = mesActual();
+            const cerradosActivos = meses.filter(r => r.mes < actual && r.activas > 0);
+            const totalCerrados = cerradosActivos.reduce((a, r) => a + r.activas, 0);
+
+            const filas = meses.map(r => `<div class="arch-row ${r.activas === 0 ? 'archivado' : ''}">
+                <div class="arch-info">
+                    <strong>${nombreMes(r.mes)}</strong>${r.mes === actual ? ' <span class="est-badge est-risk">mes en curso</span>' : ''}
+                    <small>${r.total} intervención(es) · ${r.activas} en el listado · ${r.archivadas} archivada(s)${r.pendientes ? ` · ⏳ ${r.pendientes} pendiente(s)` : ''}</small>
+                </div>
+                <div>
+                    ${r.activas > 0 ? `<button class="btn-small" style="background:#764ba2;" onclick="cambiarArchivoMes('${r.mes}', true)">📦 Archivar mes</button>` : ''}
+                    ${r.archivadas > 0 ? `<button class="btn-small" style="background:#6c757d;" onclick="cambiarArchivoMes('${r.mes}', false)">↩️ Desarchivar</button>` : ''}
+                </div>
+            </div>`).join('');
+
+            document.getElementById('archivoContenido').innerHTML = `
+                <button class="btn-small" style="background:#764ba2;margin-bottom:15px;" ${totalCerrados ? '' : 'disabled'} onclick="archivarMesesCerrados()">
+                    📦 Archivar todos los meses cerrados${totalCerrados ? ` (${totalCerrados} intervenciones)` : ''}
+                </button>
+                ${filas || '<p>No hay intervenciones registradas.</p>'}`;
+        }
+
+        async function aplicarArchivo(lista, archivar) {
+            try {
+                for (let k = 0; k < lista.length; k += 400) {
+                    const batch = db.batch();
+                    lista.slice(k, k + 400).forEach(i => {
+                        batch.update(db.collection('intervenciones').doc(i.id),
+                            archivar ? { archivado: true, archivadoEn: getFechaLocal() } : { archivado: false, archivadoEn: '' });
+                    });
+                    await batch.commit();
+                }
+            } catch (error) {
+                mostrarError("Error al archivar: " + error.message);
+            }
+        }
+
+        async function cambiarArchivoMes(mes, archivar) {
+            await asegurarHistorial();
+            const objetivo = intervencionesDelMes(mes).filter(i => !!i.archivado !== archivar);
+            if (!objetivo.length) return;
+            let msg = archivar
+                ? `¿Archivar ${objetivo.length} intervención(es) de ${nombreMes(mes)}?`
+                : `¿Desarchivar ${objetivo.length} intervención(es) de ${nombreMes(mes)} y devolverlas al listado?`;
+            if (archivar) {
+                const pend = objetivo.filter(i => i.estado !== 'lista').length;
+                if (mes === mesActual()) msg += '\n\n⚠️ Es el mes en curso: las nuevas intervenciones de este mes que cargues después seguirán apareciendo en el listado y el panel.';
+                if (pend) msg += `\n\n⏳ ${pend} están Pendientes.`;
+                msg += '\n\nDejarán de contar en el panel, pero seguirán en el histórico, los informes y las alertas.';
+            }
+            if (!confirm(msg)) return;
+            if (!(await pedirClave(`${archivar ? 'Archivar' : 'Desarchivar'} ${nombreMes(mes)}: ingresa la clave para continuar.`))) return;
+            await aplicarArchivo(objetivo, archivar);
+        }
+
+        async function archivarMesesCerrados() {
+            await asegurarHistorial();
+            const actual = mesActual();
+            const objetivo = intervenciones.filter(i => !i.archivado && (i.fecha || '').slice(0, 7) && (i.fecha || '').slice(0, 7) < actual);
+            if (!objetivo.length) return;
+            const pend = objetivo.filter(i => i.estado !== 'lista').length;
+            let msg = `¿Archivar ${objetivo.length} intervención(es) de todos los meses anteriores a ${nombreMes(actual)}?`;
+            if (pend) msg += `\n\n⏳ ${pend} están Pendientes.`;
+            msg += '\n\nDejarán de contar en el panel, pero seguirán en el histórico, los informes y las alertas.';
+            if (!confirm(msg)) return;
+            if (!(await pedirClave('Archivar todos los meses cerrados: ingresa la clave para continuar.'))) return;
+            await aplicarArchivo(objetivo, true);
+        }
+
+        // ----- Flexibilización -----
+        function abrirFlex(mes, jovenEnc) {
+            const joven = decodeURIComponent(jovenEnc);
+            flexCtx = { mes, joven };
+            const f = getFlex(mes, joven);
+            document.getElementById('flexTitulo').textContent = f ? '🟡 Editar flexibilización' : '🟡 Flexibilizar joven';
+            document.getElementById('flexSub').textContent = `${joven} — ${nombreMes(mes)}`;
+            document.getElementById('flexMotivo').value = f ? f.motivo : '';
+            document.getElementById('flexQuitarBtn').style.display = f ? 'inline-block' : 'none';
+            document.getElementById('modalFlex').classList.add('open');
+            document.getElementById('flexMotivo').focus();
+        }
+        function cerrarFlex() {
+            document.getElementById('modalFlex').classList.remove('open');
+            flexCtx = null;
+        }
+        async function guardarFlex() {
+            if (!flexCtx) return;
+            const motivo = document.getElementById('flexMotivo').value.trim();
+            if (!motivo) { alert('Escribe el motivo de la flexibilización'); return; }
+            const { mes, joven } = flexCtx;
+            try {
+                await db.collection('flexibilizaciones').doc(flexDocId(mes, joven)).set({ mes, joven, motivo, fecha: getFechaLocal() });
+                cerrarFlex();
+            } catch (error) {
+                mostrarError("Error al guardar flexibilización: " + error.message);
+            }
+        }
+        async function quitarFlex() {
+            if (!flexCtx) return;
+            if (!confirm('¿Quitar la flexibilización? El joven volverá a evaluarse con la regla normal.')) return;
+            try {
+                await db.collection('flexibilizaciones').doc(flexDocId(flexCtx.mes, flexCtx.joven)).delete();
+                cerrarFlex();
+            } catch (error) {
+                mostrarError("Error al quitar flexibilización: " + error.message);
             }
         }
 
