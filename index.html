@@ -557,6 +557,11 @@
         .plazo-fuera { color: #dc3545; }
         .plazo-ok { color: #28a745; }
         .plazo-sd { color: #6c757d; font-weight: 400; }
+        .plazo-alerta { display: inline-block; margin-left: 4px; padding: 1px 7px; border-radius: 10px; font-size: 0.92em; font-weight: 700; }
+        .plazo-alerta.al-ok { background: #d4edda; color: #155724; }
+        .plazo-alerta.al-aviso { background: #fff3cd; color: #856404; }
+        .plazo-alerta.al-urgente { background: #f8d7da; color: #721c24; animation: parpadeoPlazo 1.2s ease-in-out infinite; }
+        @keyframes parpadeoPlazo { 50% { opacity: 0.45; } }
         .fecha-reg { display: block; font-size: 0.75em; color: #6c757d; margin-top: 2px; }
         .reg-det summary { cursor: pointer; font-size: 0.85em; color: #4a4fa3; font-weight: 600; }
         .reg-det .reg-fuera { color: #dc3545; margin-left: 6px; }
@@ -1386,16 +1391,54 @@
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
         }
 
-        // ===== PLAZO DE REGISTRO: 72 h desde el día de la intervención (solo desde octubre 2026) =====
-        const PLAZO_HORAS = 72;
+        // ===== PLAZO DE REGISTRO: 3 días hábiles (calendario bancario chileno), solo desde octubre 2026 =====
+        // Días hábiles = lunes a viernes, excepto feriados y el feriado bancario del 31 de diciembre
+        // (Ley General de Bancos, art. 38: los bancos tampoco atienden los sábados).
+        const PLAZO_DIAS_HABILES = 3;
         const PLAZO_DESDE = '2026-10-01';   // intervenciones con fecha anterior no llevan plazo
+
+        // Feriados que caen de lunes a viernes. MANTENER ACTUALIZADO cada año (fechas posteriores
+        // a las listadas se calculan solo con fines de semana).
+        const FERIADOS_CL = new Set([
+            // 2026 (calendario oficial)
+            '2026-10-12',  // Encuentro de Dos Mundos
+            '2026-12-08',  // Inmaculada Concepción
+            '2026-12-25',  // Navidad
+            '2026-12-31',  // Feriado bancario
+            // 2027 (provisorio: verificar cuando se publique el calendario oficial)
+            '2027-01-01',  // Año Nuevo
+            '2027-03-26',  // Viernes Santo
+            '2027-05-21',  // Glorias Navales
+            '2027-06-28',  // San Pedro y San Pablo (trasladado)
+            '2027-07-16',  // Virgen del Carmen
+            '2027-09-17',  // Feriado Fiestas Patrias (18 sábado y 19 domingo)
+            '2027-10-11',  // Encuentro de Dos Mundos
+            '2027-11-01',  // Todos los Santos
+            '2027-12-08',  // Inmaculada Concepción
+            '2027-12-31'   // Feriado bancario
+        ]);
 
         function aplicaPlazo(i) { return !!i.fecha && i.fecha >= PLAZO_DESDE; }
 
-        // Límite = fin del día de la intervención + 72 h (ej.: intervención el 5 → vence el 8 a las 23:59:59)
+        function fechaISOLocal(f) {
+            return `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`;
+        }
+        function esDiaHabil(f) {
+            const dow = f.getDay();
+            return dow !== 0 && dow !== 6 && !FERIADOS_CL.has(fechaISOLocal(f));
+        }
+
+        // Límite = fin (23:59:59) del 3er día hábil posterior al día de la intervención
+        // (ej.: intervención lunes 5 → vence jueves 8; jueves 8 con lunes 12 feriado → vence miércoles 14)
         function limitePlazo(i) {
             const [y, m, d] = i.fecha.split('-').map(Number);
-            return new Date(y, m - 1, d, 23, 59, 59).getTime() + PLAZO_HORAS * 3600 * 1000;
+            const f = new Date(y, m - 1, d);
+            let n = 0;
+            while (n < PLAZO_DIAS_HABILES) {
+                f.setDate(f.getDate() + 1);
+                if (esDiaHabil(f)) n++;
+            }
+            return new Date(f.getFullYear(), f.getMonth(), f.getDate(), 23, 59, 59).getTime();
         }
 
         // Estado del plazo de una intervención
@@ -1420,14 +1463,22 @@
         }
         function formatoCuenta(ms) {
             const t = Math.max(0, Math.floor(ms / 1000));
-            return `${Math.floor(t / 3600)}:${pad2(Math.floor(t % 3600 / 60))}:${pad2(t % 60)}`;
+            const dias = Math.floor(t / 86400), h = Math.floor(t % 86400 / 3600);
+            return `${dias}d ${pad2(h)}:${pad2(Math.floor(t % 3600 / 60))}:${pad2(t % 60)}`;
+        }
+
+        // Mini alerta junto al temporizador: >24 h verde, ≤24 h amarillo (último día), ≤6 h rojo (urgente)
+        function nivelAlerta(resto) {
+            if (resto <= 6 * 3600 * 1000) return ['al-urgente', '🔴 ¡Urgente!'];
+            if (resto <= 24 * 3600 * 1000) return ['al-aviso', '🟡 Último día'];
+            return ['al-ok', '🟢 En plazo'];
         }
 
         // Bloque visual del plazo en el listado (junto al estado Pendiente / Lista)
         function htmlPlazo(i) {
             const p = estadoPlazo(i);
             if (p.tipo === 'corriendo') {
-                return `<div class="plazo plazo-corre ${p.resto < 24 * 3600 * 1000 ? 'plazo-urgente' : ''}" data-lim="${p.lim}">⏱ <span class="plazo-t">${formatoCuenta(p.resto)}</span> para registrar</div>`;
+                return `<div class="plazo plazo-corre ${p.resto < 24 * 3600 * 1000 ? 'plazo-urgente' : ''}" data-lim="${p.lim}" title="Plazo: ${PLAZO_DIAS_HABILES} días hábiles. Vence ${fechaHoraCorta(new Date(p.lim).toISOString())}">⏱ <span class="plazo-t">${formatoCuenta(p.resto)}</span> para registrar <span class="plazo-alerta ${nivelAlerta(p.resto)[0]}">${nivelAlerta(p.resto)[1]}</span></div>`;
             }
             if (p.tipo === 'vencido') return '<div class="plazo plazo-fuera">⛔ Fuera de plazo</div>';
             if (p.tipo === 'fuera') return '<div class="plazo plazo-fuera">⛔ Registrada fuera de plazo</div>';
@@ -1456,6 +1507,9 @@
                 }
                 el.querySelector('.plazo-t').textContent = formatoCuenta(resto);
                 el.classList.toggle('plazo-urgente', resto < 24 * 3600 * 1000);
+                const [clase, texto] = nivelAlerta(resto);
+                const al = el.querySelector('.plazo-alerta');
+                if (al) { al.className = 'plazo-alerta ' + clase; al.textContent = texto; }
             });
         }, 1000);
 
@@ -2331,7 +2385,7 @@
         async function exportarExcelCompleto() {
             await asegurarHistorial();
             if (!intervenciones.length) { alert('No hay datos para exportar'); return; }
-            let csv = "Joven,Fecha,Interventores,Tipo,Parámetro,Estado,Archivada,Fecha de registro,Plazo 72h\n";
+            let csv = "Joven,Fecha,Interventores,Tipo,Parámetro,Estado,Archivada,Fecha de registro,Plazo 3 días hábiles\n";
             intervenciones.forEach(i => {
                 const pz = { 'corriendo': 'En plazo', 'vencido': 'Fuera de plazo (pendiente)', 'fuera': 'Fuera de plazo', 'a-tiempo': 'En plazo', 'sin-dato': 'Sin hora de registro', 'na': 'No aplica' }[estadoPlazo(i).tipo];
                 csv += `"${i.joven}","${i.fecha}","${i.interventores.join(', ')}","${i.tipo}","${i.parametro}","${i.estado}","${i.archivado ? 'Sí' : 'No'}","${fechaHoraCorta(i.fechaRegistro)}","${pz}"\n`;
@@ -2976,7 +3030,7 @@
                 const regs = [...(j.regs || [])].sort((a, b) => a.fecha.localeCompare(b.fecha));
                 const fuera = regs.filter(i => ['fuera', 'vencido'].includes(estadoPlazo(i).tipo)).length;
                 return `<details class="reg-det"><summary>📋 Ver registros (${regs.length})${fuera ? `<span class="reg-fuera">⛔ ${fuera} fuera de plazo</span>` : ''}</summary>
-                    <table class="reg-mini"><thead><tr><th>Fecha</th><th>Tipo</th><th>Fecha de registro</th><th>Estado</th><th>Plazo 72 h</th></tr></thead><tbody>
+                    <table class="reg-mini"><thead><tr><th>Fecha</th><th>Tipo</th><th>Fecha de registro</th><th>Estado</th><th>Plazo (3 días hábiles)</th></tr></thead><tbody>
                     ${regs.map(i => `<tr><td>${formatearFechaMostrar(i.fecha)}</td><td>${escHtml(i.tipo)}</td><td>${i.fechaRegistro ? fechaHoraCorta(i.fechaRegistro) : 'Sin dato'}</td><td>${i.estado === 'lista' ? '✅ Lista' : '⏳ Pendiente'}</td><td>${textoPlazo(i)}</td></tr>`).join('')}
                     </tbody></table></details>`;
             };
@@ -3121,7 +3175,7 @@
                 ${bloqueGraficos}
 
                 <h3 class="hist-sub">👤 3. Por joven: directas e indirectas, y detalle por tipo</h3>
-                <div class="inf-note">Plazo de registro: <strong>72 horas</strong> desde el día de la intervención (aplica a intervenciones desde el 01/10/2026). Si se registra después, queda <strong>fuera de plazo</strong>.</div>
+                <div class="inf-note">Plazo de registro: <strong>3 días hábiles</strong> (calendario bancario chileno: lunes a viernes, sin feriados ni 31 de diciembre) contados desde el día siguiente a la intervención. Aplica a intervenciones desde el 01/10/2026. Si se registra después, queda <strong>fuera de plazo</strong>.</div>
                 ${total ? `<div class="table-container"><table>
                     <thead><tr><th>Joven</th><th>Total</th><th>Directas</th><th>Indirectas</th><th>Proporción</th><th>Por tipo de intervención</th><th>Fecha de registro y plazo</th></tr></thead>
                     <tbody>${filasJov}</tbody></table></div>
