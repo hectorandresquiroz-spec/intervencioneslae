@@ -1238,6 +1238,7 @@
                 <button class="btn-small" style="background:#667eea;" onclick="periodoRapido('ayer')">Ayer</button>
                 <button class="btn-small" style="background:#667eea;" onclick="periodoRapido('7d')">Últimos 7 días</button>
                 <button class="btn-small" style="background:#667eea;" onclick="periodoRapido('mes')">Este mes</button>
+                <button class="btn-small" id="btnSinContacto" style="background:#fd7e14;" onclick="abrirSinContacto()">📵 Ingresos sin contacto</button>
                 <button class="btn-small btn-excel" onclick="exportarInforme()">📥 Exportar CSV</button>
                 <button class="btn-small btn-excel-joven" onclick="window.print()">🖨️ Imprimir / PDF</button>
             </div>
@@ -1281,7 +1282,7 @@
                 <button class="btn-small btn-danger" onclick="cerrarCumplimiento()">✖ Cerrar</button>
             </div>
             <p style="color:#6c757d;font-size:0.9em;margin-bottom:15px;">
-                Estado del <strong>mes en curso</strong>: mínimo de <strong>5 intervenciones por joven al mes</strong>. Se marca en rojo cuando quedan 7 días o menos. Los flexibilizados y egresados no generan alerta. Los incumplimientos del mes anterior están más abajo.
+                Estado del <strong>mes en curso</strong>: mínimo de <strong>5 intervenciones por joven al mes</strong>. Se marca en rojo cuando quedan 7 días o menos. Los flexibilizados, egresados e ingresos sin contacto no generan alerta. Los incumplimientos del mes anterior están más abajo.
             </p>
             <div id="alertasCumplimiento"></div>
             <div style="text-align:right;margin-top:10px;">
@@ -1303,6 +1304,21 @@
             <div class="modal-actions">
                 <button class="btn-small" style="background:#6c757d;" onclick="cerrarEgreso()">Cancelar</button>
                 <button class="btn-small" onclick="guardarEgreso()">📦 Archivar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL INGRESOS SIN CONTACTO -->
+    <div class="modal-overlay" id="modalSinContacto" onclick="if(event.target===this)cerrarSinContacto()">
+        <div class="modal-box small" style="max-width:560px;">
+            <div class="modal-head"><h3>📵 Ingresos sin contacto</h3></div>
+            <p style="color:#6c757d;font-size:0.9em;margin-bottom:8px;">Marca a los jóvenes que ingresaron pero aún no han tenido contacto. No cuentan como vigentes en el informe, no generan alertas y no aparecen en "Sin intervenciones". Cuando logres el primer contacto, desmárcalos.</p>
+            <input type="text" id="scBuscar" placeholder="Buscar joven..." autocomplete="off" oninput="renderSinContacto()" style="width:100%;margin-bottom:8px;">
+            <div id="scLista" style="max-height:320px;overflow:auto;border:1px solid #e9ecef;border-radius:8px;padding:4px 8px;"></div>
+            <div id="scResumen" style="font-size:0.88em;color:#495057;margin:8px 0;"></div>
+            <div class="modal-actions">
+                <button class="btn-small" style="background:#6c757d;" onclick="cerrarSinContacto()">Cancelar</button>
+                <button class="btn-small" onclick="guardarSinContacto()">💾 Guardar</button>
             </div>
         </div>
     </div>
@@ -1399,24 +1415,34 @@
 
         // Feriados que caen de lunes a viernes. MANTENER ACTUALIZADO cada año (fechas posteriores
         // a las listadas se calculan solo con fines de semana).
-        const FERIADOS_CL = new Set([
+        const FERIADOS_CL = new Map([
             // 2026 (calendario oficial)
-            '2026-10-12',  // Encuentro de Dos Mundos
-            '2026-12-08',  // Inmaculada Concepción
-            '2026-12-25',  // Navidad
-            '2026-12-31',  // Feriado bancario
+            ['2026-10-12', 'Encuentro de Dos Mundos'],
+            ['2026-12-08', 'Inmaculada Concepción'],
+            ['2026-12-25', 'Navidad'],
+            ['2026-12-31', 'Feriado bancario'],
             // 2027 (provisorio: verificar cuando se publique el calendario oficial)
-            '2027-01-01',  // Año Nuevo
-            '2027-03-26',  // Viernes Santo
-            '2027-05-21',  // Glorias Navales
-            '2027-06-28',  // San Pedro y San Pablo (trasladado)
-            '2027-07-16',  // Virgen del Carmen
-            '2027-09-17',  // Feriado Fiestas Patrias (18 sábado y 19 domingo)
-            '2027-10-11',  // Encuentro de Dos Mundos
-            '2027-11-01',  // Todos los Santos
-            '2027-12-08',  // Inmaculada Concepción
-            '2027-12-31'   // Feriado bancario
+            ['2027-01-01', 'Año Nuevo'],
+            ['2027-03-26', 'Viernes Santo'],
+            ['2027-05-21', 'Glorias Navales'],
+            ['2027-06-28', 'San Pedro y San Pablo'],
+            ['2027-07-16', 'Virgen del Carmen'],
+            ['2027-09-17', 'Feriado Fiestas Patrias'],
+            ['2027-10-11', 'Encuentro de Dos Mundos'],
+            ['2027-11-01', 'Todos los Santos'],
+            ['2027-12-08', 'Inmaculada Concepción'],
+            ['2027-12-31', 'Feriado bancario']
         ]);
+
+        // Feriados que no cuentan como hábiles dentro del período del informe (+7 días, por los plazos que vencen después)
+        function textoFeriadosPeriodo(desde, hasta) {
+            const ini = desde > PLAZO_DESDE ? desde : PLAZO_DESDE;
+            const [y, m, d] = hasta.split('-').map(Number);
+            const fin = fechaISOLocal(new Date(y, m - 1, d + 7));
+            const lista = [...FERIADOS_CL].filter(([f]) => f >= ini && f <= fin).sort((x, y2) => x[0].localeCompare(y2[0]));
+            if (!lista.length) return 'No hay feriados de lunes a viernes en este período.';
+            return 'No cuentan como hábiles: ' + lista.map(([f, n]) => `<strong>${f.slice(8)}/${f.slice(5, 7)}</strong> (${n})`).join(', ') + '. Tampoco cuentan sábados ni domingos.';
+        }
 
         function aplicaPlazo(i) { return !!i.fecha && i.fecha >= PLAZO_DESDE; }
 
@@ -1757,8 +1783,9 @@
 
             // Jóvenes
             db.collection('jovenes').onSnapshot(snapshot => {
-                jovenes = snapshot.docs.map(doc => ({ id: doc.id, nombre: doc.data().nombre, archivado: !!doc.data().archivado, egresoEn: doc.data().egresoEn || '' }));
+                jovenes = snapshot.docs.map(doc => ({ id: doc.id, nombre: doc.data().nombre, archivado: !!doc.data().archivado, egresoEn: doc.data().egresoEn || '', sinContacto: !!doc.data().sinContacto }));
                 actualizarListaJovenes();
+                if (document.getElementById('modalInforme').classList.contains('open')) renderInforme();
                 actualizarSelectores();
                 actualizarTabla();
                 actualizarEstadisticas();
@@ -1891,7 +1918,7 @@
 
             let html = vigentes.map(j => `
                 <div class="item">
-                    <span class="item-nombre">${escHtml(j.nombre)}</span>
+                    <span class="item-nombre">${escHtml(j.nombre)}${j.sinContacto ? ' <small style="color:#fd7e14;">📵 sin contacto</small>' : ''}</span>
                     <div class="item-actions">
                         <button class="btn-small" style="background:#764ba2;" title="Archivar (egreso)" onclick="abrirEgreso('${j.id}')">📦 Archivar</button>
                         <button class="delete-btn" onclick="eliminarJoven('${j.id}')">🗑️</button>
@@ -2456,6 +2483,8 @@
         function jovenesVigentes() { return jovenes.filter(j => !j.archivado); }
         function getJoven(n) { return jovenes.find(j => j.nombre === n); }
         function esEgresado(n) { const j = getJoven(n); return !!(j && j.archivado); }
+        // Ingreso sin contacto: joven vigente que ingresó pero aún no tiene contacto (no cuenta como vigente en el informe)
+        function esSinContacto(n) { const j = getJoven(n); return !!(j && !j.archivado && j.sinContacto); }
         function egresoMesDe(n) { const j = getJoven(n); return j && j.archivado ? (j.egresoEn ? j.egresoEn.slice(0, 7) : mesActual()) : ''; }
         function cuentaEnPanel(i) { return !i.archivado && !esEgresado(i.joven); }
 
@@ -2475,6 +2504,8 @@
             const ints = intervencionesDelMes(m);
             const nombres = new Set(jovenes.filter(j => !j.archivado || m < egresoMesDe(j.nombre)).map(j => j.nombre));
             ints.forEach(i => nombres.add(i.joven));
+            // Los ingresos sin contacto no se evalúan mientras no tengan intervenciones
+            [...nombres].forEach(n => { if (esSinContacto(n) && !ints.some(i => i.joven === n)) nombres.delete(n); });
             return [...nombres].sort((a, b) => a.localeCompare(b, 'es')).map(nombre => {
                 const propias = ints.filter(i => i.joven === nombre);
                 const directas = propias.filter(i => i.parametro === 'directa').length;
@@ -2850,7 +2881,9 @@
         function bloqueObservacion(s, fechaTxt, unidad, W = 700, info = '') {
             const titulo = { tot: 'Jóvenes con menores intervenciones', dir: 'Jóvenes con bajas intervenciones directas', ind: 'Jóvenes con bajas intervenciones indirectas' }[s.k];
             const n = s.lista.length;
-            const nota = notaExclusion.trim().replace(/[.\s]+$/, '');
+            const nSC = jovenesVigentes().filter(j => j.sinContacto).length;
+            const notaAuto = nSC ? `se excluye a ${nSC} ${nSC === 1 ? 'joven con ingreso sin contacto' : 'jóvenes con ingreso sin contacto'}` : '';
+            const nota = (notaExclusion.trim() || notaAuto).replace(/[.\s]+$/, '');
             const excl = nota ? `, ${escHtml(nota)}` : '';
             const rango = textoRangoObs(s.k, s.rango);
             const texto = n
@@ -2929,7 +2962,9 @@
             const prevDentro = sumarDias(desde, -nDias) >= mes + '-01';   // solo se compara dentro del mismo mes
 
             // Por joven (período)
-            const nombres = nombresHistorial().filter(n => !esEgresado(n) || ints.some(i => i.joven === n));
+            const nombres = nombresHistorial().filter(n => (!esEgresado(n) || ints.some(i => i.joven === n)) && (!esSinContacto(n) || ints.some(i => i.joven === n)));
+            const sinContacto = jovenesVigentes().filter(j => j.sinContacto).map(j => j.nombre).sort((a, b) => a.localeCompare(b, 'es'));
+            const vigentesN = jovenesVigentes().length - sinContacto.length;
             const porJoven = nombres.map(n => {
                 const propias = ints.filter(i => i.joven === n);
                 const d = propias.filter(i => i.parametro === 'directa').length;
@@ -2940,7 +2975,7 @@
             const parametroDe = n => { const t = tipos.find(x => x.nombre === n); if (t) return t.parametro; const i = intervenciones.find(x => x.tipo === n); return i ? i.parametro : ''; };
             const cuentaTipoSem = contarPor(ints, i => i.tipo);
             const cuentaTipoMes = contarPor(intsMes, i => i.tipo);
-            return { desde, hasta, nDias, prevDentro, ints, prevInts, mes, intsMes, porJoven, tiposNombres, parametroDe, cuentaTipoSem, cuentaTipoMes };
+            return { desde, hasta, nDias, prevDentro, ints, prevInts, mes, intsMes, porJoven, sinContacto, vigentesN, tiposNombres, parametroDe, cuentaTipoSem, cuentaTipoMes };
         }
 
         // ----- Gráficos del informe (SVG/CSS sin librerías externas) -----
@@ -3013,7 +3048,10 @@
             const dir = D.ints.filter(i => i.parametro === 'directa').length;
             const ind = total - dir;
             const listas = D.ints.filter(i => i.estado === 'lista').length;
-            const atendidos = D.porJoven.filter(j => j.total > 0).length;
+            // Atendidos se cuentan contra los jóvenes VIGENTES (sin ingresos sin contacto, egresados ni nombres que ya no están en la lista)
+            const esVigenteInf = n => { const j = getJoven(n); return !!(j && !j.archivado && !j.sinContacto); };
+            const atendidos = D.porJoven.filter(j => j.total > 0 && esVigenteInf(j.nombre)).length;
+            const noVigConInt = D.porJoven.filter(j => j.total > 0 && !esVigenteInf(j.nombre) && !esSinContacto(j.nombre));
             const prevTotal = D.prevInts.length;
             const dif = total - prevTotal;
             const variacion = !D.prevDentro
@@ -3024,7 +3062,10 @@
 
             // --- por joven ---
             const conAct = D.porJoven.filter(j => j.total > 0).sort((a, b) => b.total - a.total || a.nombre.localeCompare(b.nombre, 'es'));
-            const sinAct = D.porJoven.filter(j => j.total === 0).map(j => j.nombre).sort((a, b) => a.localeCompare(b, 'es')).map(escHtml);
+            // "Sin intervenciones": por el TOTAL DEL MES (no por el período), sin ingresos sin contacto ni egresados
+            const sinAct = resumenMes(D.mes).filter(r => r.total === 0 && r.tipo !== 'egreso')
+                .map(r => r.nombre).sort((a, b) => a.localeCompare(b, 'es'))
+                .map(n => escHtml(n) + (getFlex(D.mes, n) ? ' <small>(flexibilizado)</small>' : ''));
             // Detalle por intervención: fecha, tipo, fecha de registro y plazo de 72 h
             const detalleRegistros = j => {
                 const regs = [...(j.regs || [])].sort((a, b) => a.fecha.localeCompare(b.fecha));
@@ -3166,8 +3207,11 @@
                     <div class="hist-stat"><b>${ind}</b><span>Indirectas (${pct(ind, total)})</span></div>
                     <div class="hist-stat"><b>${listas}</b><span>Listas</span></div>
                     <div class="hist-stat"><b>${total - listas}</b><span>Pendientes</span></div>
-                    <div class="hist-stat"><b>${atendidos}</b><span>de ${D.porJoven.length} jóvenes atendidos</span></div>
+                    <div class="hist-stat"><b>${atendidos}</b><span>de ${D.vigentesN} jóvenes vigentes atendidos</span></div>
+                    <div class="hist-stat"><b>${D.vigentesN}</b><span>Jóvenes vigentes</span></div>
+                    <div class="hist-stat"><b>${D.sinContacto.length}</b><span>Ingresos sin contacto</span></div>
                 </div>
+                ${noVigConInt.length ? `<div class="inf-note">ℹ️ Además hay ${noVigConInt.length} joven(es) con intervenciones en el período que no figuran como vigentes (egresados o nombres que ya no están en la lista): ${noVigConInt.map(j => `<strong>${escHtml(j.nombre)}</strong> (${j.total})`).join(', ')}. Sus intervenciones sí están en el total del período.</div>` : ''}
                 ${barraPct(dir, ind)}
                 <div class="pct-legend"><b class="d">■ Directas ${pct(dir, total)}</b> &nbsp; <b class="i">■ Indirectas ${pct(ind, total)}</b> &nbsp;·&nbsp; ${variacion}</div>
 
@@ -3175,11 +3219,13 @@
                 ${bloqueGraficos}
 
                 <h3 class="hist-sub">👤 3. Por joven: directas e indirectas, y detalle por tipo</h3>
-                <div class="inf-note">Plazo de registro: <strong>3 días hábiles</strong> (calendario bancario chileno: lunes a viernes, sin feriados ni 31 de diciembre) contados desde el día siguiente a la intervención. Aplica a intervenciones desde el 01/10/2026. Si se registra después, queda <strong>fuera de plazo</strong>.</div>
+                <div class="inf-note">Plazo de registro: <strong>3 días hábiles</strong> (calendario bancario chileno: lunes a viernes, sin feriados ni 31 de diciembre) contados desde el día siguiente a la intervención. Aplica a intervenciones desde el 01/10/2026. Si se registra después, queda <strong>fuera de plazo</strong>.<br>${textoFeriadosPeriodo(D.desde, D.hasta)}</div>
                 ${total ? `<div class="table-container"><table>
                     <thead><tr><th>Joven</th><th>Total</th><th>Directas</th><th>Indirectas</th><th>Proporción</th><th>Por tipo de intervención</th><th>Fecha de registro y plazo</th></tr></thead>
                     <tbody>${filasJov}</tbody></table></div>
-                    ${sinAct.length ? `<details class="sin-act"><summary>😴 Sin intervenciones en el período (${sinAct.length}) — ver nombres</summary><div class="sin-grid">${sinAct.map(n => `<span>${n}</span>`).join('')}</div></details>` : ''}` : vacio}
+                    ` : vacio}
+                ${sinAct.length ? `<details class="sin-act"><summary>😴 Sin intervenciones en todo ${nombreMes(D.mes)} (${sinAct.length}) — ver nombres</summary><div class="sin-grid">${sinAct.map(n => `<span>${n}</span>`).join('')}</div></details>` : `<div class="inf-note">✅ Todos los jóvenes vigentes tienen al menos una intervención en ${nombreMes(D.mes)}.</div>`}
+                ${D.sinContacto.length ? `<details class="sin-act"><summary>📵 Ingresos sin contacto (${D.sinContacto.length}) — ver nombres</summary><div class="sin-grid">${D.sinContacto.map(n => `<span>${escHtml(n)}</span>`).join('')}</div></details>` : ''}
 
                 <h3 class="hist-sub">📅 4. Acumulado de ${nombreMes(D.mes)} (totalidad del mes)</h3>
                 <div class="hist-stats">
@@ -3206,7 +3252,7 @@
                                 <label>desde <input type="number" min="0" value="${rangoMes[k][0] === null ? '' : rangoMes[k][0]}" onchange="setRangoMes('${k}', 0, this.value)"></label>
                                 <label>hasta <input type="number" min="0" value="${rangoMes[k][1] === null ? '' : rangoMes[k][1]}" onchange="setRangoMes('${k}', 1, this.value)"></label></div>`).join('')}
                             <div class="tablero-fila"><span>Nota</span>
-                                <input type="text" style="flex:1;min-width:240px;width:auto;" value="${escHtml(notaExclusion)}" placeholder="opcional: para este análisis se excluye a 1 joven con ingreso sin contacto" onchange="setNotaExclusion(this.value)"></div>
+                                <input type="text" style="flex:1;min-width:240px;width:auto;" value="${escHtml(notaExclusion)}" placeholder="opcional (si se deja vacío se usa la nota automática de ingresos sin contacto)" onchange="setNotaExclusion(this.value)"></div>
                         </div>
                         <div class="tablero-acciones">
                             <button class="btn-small" style="background:#fd7e14" onclick="presetCeroUno()">0 a 1 en las tres</button>
@@ -3244,6 +3290,10 @@
             const mesTotal = D.intsMes.length, mesDir = D.intsMes.filter(i => i.parametro === 'directa').length;
             csv += `\nACUMULADO DE ${nombreMes(D.mes).toUpperCase()}\nTotal mes,Directas,% Directas,Indirectas,% Indirectas\n`;
             csv += [mesTotal, mesDir, pct(mesDir, mesTotal), mesTotal - mesDir, pct(mesTotal - mesDir, mesTotal)].join(',') + '\n';
+            csv += `\nJÓVENES VIGENTES,${D.vigentesN}\nINGRESOS SIN CONTACTO,${D.sinContacto.length}\n`;
+            D.sinContacto.forEach(n => { csv += q(n) + '\n'; });
+            csv += `\nSIN INTERVENCIONES EN TODO ${nombreMes(D.mes).toUpperCase()}\nJoven\n`;
+            resumenMes(D.mes).filter(r => r.total === 0 && r.tipo !== 'egreso').forEach(r => { csv += q(r.nombre) + '\n'; });
             csv += `\nCUMPLIMIENTO MENSUAL POR JOVEN\nJoven,Total mes,Directas,Indirectas,Estado,Motivo flexibilización\n`;
             resumenMes(D.mes).forEach(r => {
                 csv += [q(r.nombre), r.total, r.directas, r.indirectas, q(nomEst[r.tipo]), q(r.flex ? r.flex.motivo : '')].join(',') + '\n';
@@ -3388,6 +3438,50 @@
             if (!confirm(msg)) return;
             if (!(await pedirClave('Archivar todos los meses cerrados: ingresa la clave para continuar.'))) return;
             await aplicarArchivo(objetivo, true);
+        }
+
+        // ----- Ingresos sin contacto -----
+        let scSel = new Set();
+        function abrirSinContacto() {
+            scSel = new Set(jovenesVigentes().filter(j => j.sinContacto).map(j => j.nombre));
+            document.getElementById('scBuscar').value = '';
+            renderSinContacto();
+            document.getElementById('modalSinContacto').classList.add('open');
+            document.getElementById('scBuscar').focus();
+        }
+        function cerrarSinContacto() { document.getElementById('modalSinContacto').classList.remove('open'); }
+        function toggleSC(nombreEnc, marcado) {
+            const n = decodeURIComponent(nombreEnc);
+            if (marcado) scSel.add(n); else scSel.delete(n);
+            renderSinContacto();
+        }
+        function renderSinContacto() {
+            const f = normalizarTexto(document.getElementById('scBuscar').value).trim();
+            const mes = mesActual();
+            const lista = ordenarPorNombre(jovenesVigentes()).filter(j => !f || normalizarTexto(j.nombre).includes(f));
+            document.getElementById('scLista').innerHTML = lista.map(j => {
+                const n = intervencionesDelMes(mes).filter(i => i.joven === j.nombre).length;
+                return `<label style="display:flex;align-items:center;gap:8px;padding:5px 2px;border-bottom:1px solid #f1f3f5;cursor:pointer;">
+                    <input type="checkbox" ${scSel.has(j.nombre) ? 'checked' : ''} onchange="toggleSC('${encArg(j.nombre)}', this.checked)">
+                    <span style="flex:1;">${escHtml(j.nombre)}</span>
+                    <small style="color:#6c757d;">${n} interv. en ${nombreMes(mes).split(' ')[0].toLowerCase()}</small>
+                </label>`;
+            }).join('') || '<div class="no-data">Sin resultados</div>';
+            const total = jovenesVigentes().length;
+            document.getElementById('scResumen').innerHTML = `Marcados: <strong>${scSel.size}</strong> · Vigentes resultantes: <strong>${total - scSel.size}</strong> de ${total}`;
+        }
+        async function guardarSinContacto() {
+            const cambios = jovenesVigentes().filter(j => scSel.has(j.nombre) !== !!j.sinContacto);
+            if (!cambios.length) { cerrarSinContacto(); return; }
+            try {
+                const batch = db.batch();
+                cambios.forEach(j => batch.update(db.collection('jovenes').doc(j.id),
+                    scSel.has(j.nombre) ? { sinContacto: true, sinContactoDesde: getFechaLocal() } : { sinContacto: false, sinContactoDesde: '' }));
+                await batch.commit();
+                cerrarSinContacto();
+            } catch (error) {
+                mostrarError("Error al guardar ingresos sin contacto: " + error.message);
+            }
         }
 
         // ----- Flexibilización -----
