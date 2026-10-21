@@ -820,6 +820,39 @@
         .pct-legend { font-size: 0.8em; color: #6c757d; margin: 6px 0 14px; }
         .pct-legend b.d { color: #17a2b8; } .pct-legend b.i { color: #fd7e14; }
         .var-up { color: #28a745; font-weight: 600; } .var-down { color: #dc3545; font-weight: 600; }
+
+        /* ===== SECCIÓN 3: TABLA COMPACTA POR JOVEN ===== */
+        table.jv-tabla { font-size: 0.85em; }
+        .jv-tabla th, .jv-tabla td { padding: 2px 6px; vertical-align: middle; line-height: 1.25; }
+        .jv-tabla td.n { text-align: center; white-space: nowrap; }
+        .jv-tabla .jv-rank { color: #9aa0a6; font-size: 0.85em; width: 26px; text-align: center; }
+        .jv-tabla .jv-tot { font-weight: 700; color: #4a4fa3; }
+        .jv-tabla .jv-d { color: #155724; font-weight: 600; } .jv-tabla .jv-i { color: #856404; font-weight: 600; }
+        .jv-tabla small { color: #6c757d; font-weight: 400; }
+        .jv-tabla .pct-bar { height: 9px; min-width: 70px; }
+        .jv-ch { display: inline-block; border-radius: 9px; padding: 1px 7px; font-size: 0.85em; margin: 1px 3px 1px 0; white-space: nowrap; }
+        .jv-ch.d { background: #d4edda; color: #155724; } .jv-ch.i { background: #fff3cd; color: #856404; }
+        .jv-tabla .reg-det summary { font-size: 0.9em; white-space: nowrap; }
+        @media print { .jv-ch { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+        /* ===== SECCIÓN 1: RESUMEN DEL PERÍODO ===== */
+        .rs-panel { border: 1px solid #e3e6ee; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; background: #fff; }
+        .rs-main { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
+        .rs-total { display: flex; align-items: baseline; gap: 10px; }
+        .rs-total b { font-size: 2.2em; color: #667eea; line-height: 1; }
+        .rs-total span { color: #495057; font-weight: 600; }
+        .rs-var { font-size: 0.85em; }
+        .rs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 8px; }
+        .rs-item { border-radius: 8px; padding: 6px 10px; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+        .rs-item span { font-size: 0.82em; font-weight: 600; flex: 1; }
+        .rs-item b { font-size: 1.5em; }
+        .rs-item small { font-size: 0.75em; opacity: .8; }
+        .rs-item.d { background: #d4edda; color: #155724; } .rs-item.i { background: #fff3cd; color: #856404; }
+        .rs-item.ok { background: #e7f1ff; color: #0b4f9c; } .rs-item.pen { background: #f1f3f5; color: #495057; }
+        .rs-item.mal { background: #f8d7da; color: #721c24; } .rs-item.flex { background: #ece6f7; color: #4a2c82; } .rs-item.riesgo { background: #ffe5d0; color: #8a4b08; }
+        .rs-acc { margin-left: auto; }
+        .rs-jov { display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #dee2e6; font-size: 0.88em; color: #495057; }
+        @media (max-width: 640px) { .rs-grid { grid-template-columns: 1fr 1fr; } }
+        @media print { .rs-item { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .rs-panel { page-break-inside: avoid; } }
         .tipo-chip { display: inline-block; background: #eef0ff; color: #4a4fa3; border-radius: 10px; padding: 2px 8px; font-size: 0.8em; margin: 2px 3px 2px 0; }
         .inf-note { background: #f8f9fa; border-left: 4px solid #667eea; padding: 10px 14px; border-radius: 6px; font-size: 0.9em; color: #495057; margin: 10px 0; }
         @media print {
@@ -1060,28 +1093,23 @@
                     <!-- ESTADÍSTICAS GENERALES -->
                     <div class="stats-section">
                         <h2>📊 Estadísticas Generales</h2>
-                        <div class="stats-grid">
-                            <div class="stat-card">
-                                <div class="stat-number" id="totalIntervenciones">0</div>
-                                <div class="stat-label">Total</div>
+                        <div class="rs-panel" style="margin-bottom:0;">
+                            <div class="rs-main">
+                                <div class="rs-total"><b id="totalIntervenciones">0</b><span>Total de intervenciones</span></div>
                             </div>
-                            <div class="stat-card directa">
-                                <div class="stat-number" id="totalDirectas">0</div>
-                                <div class="stat-label">Directas</div>
+                            <div class="rs-grid">
+                                <div class="rs-item d"><span>Directas</span><b id="totalDirectas">0</b><small id="pctDirectas"></small></div>
+                                <div class="rs-item i"><span>Indirectas</span><b id="totalIndirectas">0</b><small id="pctIndirectas"></small></div>
+                                <div class="rs-item ok"><span>Listas</span><b id="totalListas">0</b></div>
+                                <div class="rs-item pen"><span>Pendientes</span><b id="totalPendientes">0</b></div>
                             </div>
-                            <div class="stat-card indirecta">
-                                <div class="stat-number" id="totalIndirectas">0</div>
-                                <div class="stat-label">Indirectas</div>
-                            </div>
-                            <div class="stat-card lista">
-                                <div class="stat-number" id="totalListas">0</div>
-                                <div class="stat-label">Listas</div>
-                            </div>
-                            <div class="stat-card pendiente">
-                                <div class="stat-number" id="totalPendientes">0</div>
-                                <div class="stat-label">Pendientes</div>
+                            <div class="rs-jov">
+                                <span>👥 Jóvenes vigentes: <b id="statVigentes">0</b></span>
+                                <span>✅ Atendidos: <b id="statAtendidos">0</b> de <span id="statVigentes2">0</span></span>
+                                <span>📵 Ingresos sin contacto: <b id="statSinContacto">0</b></span>
                             </div>
                         </div>
+                        <div style="margin-top:10px;"><button class="btn-small btn-excel" onclick="exportarDirectasMes()">📥 Exportar directas del mes (jóvenes, egresados e ingresos sin contacto)</button></div>
                     </div>
 
                     <!-- BUSCADORES -->
@@ -2146,6 +2174,13 @@
             document.getElementById('totalIndirectas').textContent = indirectas;
             document.getElementById('totalListas').textContent = listas;
             document.getElementById('totalPendientes').textContent = pendientes;
+            const _sc = jovenesVigentes().filter(j => j.sinContacto).length;
+            const _vig = jovenesVigentes().filter(j => !j.sinContacto);
+            const _aten = _vig.filter(j => activas.some(i => i.joven === j.nombre)).length;
+            const _set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+            _set('pctDirectas', pct(directas, total)); _set('pctIndirectas', pct(indirectas, total));
+            _set('statVigentes', _vig.length); _set('statVigentes2', _vig.length);
+            _set('statAtendidos', _aten); _set('statSinContacto', _sc);
         }
 
         // ACTUALIZAR GRÁFICO CIRCULAR (Directas vs Indirectas)
@@ -2536,12 +2571,11 @@
             const urgente = d <= DIAS_AVISO;
             const cierre = d === 0 ? 'el mes termina hoy' : `faltan ${d} día(s) para que termine el mes`;
 
-            let html = `<div class="hist-stats">
-                <div class="hist-stat"><b>${cumplen}</b><span>Ya cumplen</span></div>
-                <div class="hist-stat ${bajo.length ? 'mal' : ''}"><b>${bajo.length}</b><span>Con menos de ${META_MENSUAL}</span></div>
-                <div class="hist-stat"><b>${flex.length}</b><span>Flexibilizados</span></div>
-                <div class="hist-stat"><b>${d}</b><span>Días restantes</span></div>
-            </div>`;
+            let html = panelStats(cumplen, 'Jóvenes que ya cumplen', [
+                { c: bajo.length ? 'mal' : 'pen', l: `Con menos de ${META_MENSUAL}`, n: bajo.length },
+                { c: 'flex', l: 'Flexibilizados', n: flex.length },
+                { c: 'pen', l: 'Días restantes', n: d }
+            ]);
 
             if (bajo.length) {
                 html += cajaAlerta(urgente ? 'rojo' : 'amarillo',
@@ -2632,14 +2666,12 @@
             </tr>`).join('');
 
             document.getElementById('histContenido').innerHTML = `
-                <div class="hist-stats">
-                    <div class="hist-stat"><b>${ints.length}</b><span>Total</span></div>
-                    <div class="hist-stat"><b>${directas}</b><span>Directas</span></div>
-                    <div class="hist-stat"><b>${ints.length - directas}</b><span>Indirectas</span></div>
-                    <div class="hist-stat ${incumplen ? 'mal' : ''}"><b>${incumplen}</b><span>Incumplimientos</span></div>
-                    <div class="hist-stat"><b>${flexCount}</b><span>Flexibilizados</span></div>
-                    <button class="btn-small btn-excel" style="align-self:center;" onclick="exportarMesHistorico()">📥 Exportar mes</button>
-                </div>
+                ${panelStats(ints.length, 'Total de intervenciones', [
+                    { c: 'd', l: 'Directas', n: directas, s: pct(directas, ints.length) },
+                    { c: 'i', l: 'Indirectas', n: ints.length - directas, s: pct(ints.length - directas, ints.length) },
+                    { c: incumplen ? 'mal' : 'pen', l: 'Incumplimientos', n: incumplen },
+                    { c: 'flex', l: 'Flexibilizados', n: flexCount }
+                ], '<button class="btn-small btn-excel rs-acc" onclick="exportarMesHistorico()">📥 Exportar mes</button>')}
                 <h3 class="hist-sub">👥 Cumplimiento por joven (mínimo ${META_MENSUAL} intervenciones)</h3>
                 <div class="table-container"><table>
                     <thead><tr><th>Joven</th><th>Total</th><th>Directas</th><th>Indirectas</th><th>Estado</th><th>Acción</th></tr></thead>
@@ -2732,14 +2764,13 @@
                 <td>${i.estado === 'lista' ? '✅ Lista' : '⏳ Pendiente'}</td></tr>`).join('');
 
             cont.innerHTML = `
-                <div class="hist-stats">
-                    <div class="hist-stat"><b>${ints.length}</b><span>Total</span></div>
-                    <div class="hist-stat"><b>${directas}</b><span>Directas</span></div>
-                    <div class="hist-stat"><b>${ints.length - directas}</b><span>Indirectas</span></div>
-                    <div class="hist-stat"><b>${listas}</b><span>Listas</span></div>
-                    <div class="hist-stat"><b>${ints.length - listas}</b><span>Pendientes</span></div>
-                    <div class="hist-stat ${incumplidos ? 'mal' : ''}"><b>${incumplidos}</b><span>Meses incumplidos</span></div>
-                </div>
+                ${panelStats(ints.length, 'Total de intervenciones', [
+                    { c: 'd', l: 'Directas', n: directas, s: pct(directas, ints.length) },
+                    { c: 'i', l: 'Indirectas', n: ints.length - directas, s: pct(ints.length - directas, ints.length) },
+                    { c: 'ok', l: 'Listas', n: listas },
+                    { c: 'pen', l: 'Pendientes', n: ints.length - listas },
+                    { c: incumplidos ? 'mal' : 'pen', l: 'Meses incumplidos', n: incumplidos }
+                ])}
                 <h3 class="hist-sub">📅 Resumen mes a mes</h3>
                 <div class="table-container"><table>
                     <thead><tr><th>Mes</th><th>Total</th><th>Directas</th><th>Indirectas</th><th>Estado</th></tr></thead>
@@ -2903,7 +2934,6 @@
         }
         function limpiarRangosMes() { rangoMes = { tot: [null, null], dir: [null, null], ind: [null, null] }; renderInforme(); }
         function presetBajoMeta() { rangoMes.tot = [null, META_MENSUAL - 1]; renderInforme(); }
-        function presetCeroUno() { rangoMes = { tot: [0, 1], dir: [0, 1], ind: [0, 1] }; renderInforme(); }
         let notaExclusion = '';
         function setNotaExclusion(v) { notaExclusion = v; renderInforme(); }
         // Al imprimir, los desplegables del informe se abren para que salgan los nombres
@@ -2915,6 +2945,11 @@
         function toISO(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
         function sumarDias(iso, n) { const d = parseISO(iso); d.setDate(d.getDate() + n); return toISO(d); }
         function lunesDe(iso) { const d = parseISO(iso); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return toISO(d); }
+        // Panel de totales (mismo diseño en toda la app): items = [{c:'d|i|ok|pen|mal|flex|riesgo', l, n, s?}]
+        function panelStats(totalN, totalLbl, items, extraMain = '') {
+            return `<div class="rs-panel"><div class="rs-main"><div class="rs-total"><b>${totalN}</b><span>${totalLbl}</span></div>${extraMain}</div>
+                <div class="rs-grid">${items.map(x => `<div class="rs-item ${x.c}"><span>${x.l}</span><b>${x.n}</b>${x.s ? `<small>${x.s}</small>` : ''}</div>`).join('')}</div></div>`;
+        }
         function pct(a, b) { return b ? (a / b * 100).toFixed(1) + '%' : '0%'; }
         function barraPct(d, i) {
             const t = d + i; const pd = t ? d / t * 100 : 0;
@@ -3070,18 +3105,18 @@
             const detalleRegistros = j => {
                 const regs = [...(j.regs || [])].sort((a, b) => a.fecha.localeCompare(b.fecha));
                 const fuera = regs.filter(i => ['fuera', 'vencido'].includes(estadoPlazo(i).tipo)).length;
-                return `<details class="reg-det"><summary>📋 Ver registros (${regs.length})${fuera ? `<span class="reg-fuera">⛔ ${fuera} fuera de plazo</span>` : ''}</summary>
+                return `<details class="reg-det"><summary>📋 Ver (${regs.length})${fuera ? `<span class="reg-fuera">⛔ ${fuera} fuera de plazo</span>` : ''}</summary>
                     <table class="reg-mini"><thead><tr><th>Fecha</th><th>Tipo</th><th>Fecha de registro</th><th>Estado</th><th>Plazo (3 días hábiles)</th></tr></thead><tbody>
                     ${regs.map(i => `<tr><td>${formatearFechaMostrar(i.fecha)}</td><td>${escHtml(i.tipo)}</td><td>${i.fechaRegistro ? fechaHoraCorta(i.fechaRegistro) : 'Sin dato'}</td><td>${i.estado === 'lista' ? '✅ Lista' : '⏳ Pendiente'}</td><td>${textoPlazo(i)}</td></tr>`).join('')}
                     </tbody></table></details>`;
             };
+            const chipsTipos = j => Object.entries(j.tipos).sort((a, b) => b[1] - a[1]).map(([t, n]) => `<span class="jv-ch ${D.parametroDe(t) === 'directa' ? 'd' : 'i'}">${escHtml(t)} · ${n}</span>`).join('');
             const filasJov = conAct.map(j => `<tr>
                 <td><button class="joven-link" onclick="abrirHistorialJoven('${encArg(j.nombre)}')">${escHtml(j.nombre)}</button></td>
-                <td><strong>${j.total}</strong></td>
-                <td>${j.directas} <small>(${pct(j.directas, j.total)})</small></td>
-                <td>${j.indirectas} <small>(${pct(j.indirectas, j.total)})</small></td>
-                <td>${barraPct(j.directas, j.indirectas)}</td>
-                <td>${Object.entries(j.tipos).sort((a, b) => b[1] - a[1]).map(([t, n]) => `<span class="tipo-chip">${escHtml(t)}: ${n}</span>`).join('')}</td>
+                <td class="n jv-tot">${j.total}</td>
+                <td class="n jv-d">${j.directas}</td>
+                <td class="n jv-i">${j.indirectas}</td>
+                <td>${chipsTipos(j)}</td>
                 <td>${detalleRegistros(j)}</td>
             </tr>`).join('');
 
@@ -3201,43 +3236,44 @@
                 </div>
 
                 <h3 class="hist-sub">📊 1. Resumen del período</h3>
-                <div class="hist-stats">
-                    <div class="hist-stat"><b>${total}</b><span>Intervenciones</span></div>
-                    <div class="hist-stat"><b>${dir}</b><span>Directas (${pct(dir, total)})</span></div>
-                    <div class="hist-stat"><b>${ind}</b><span>Indirectas (${pct(ind, total)})</span></div>
-                    <div class="hist-stat"><b>${listas}</b><span>Listas</span></div>
-                    <div class="hist-stat"><b>${total - listas}</b><span>Pendientes</span></div>
-                    <div class="hist-stat"><b>${atendidos}</b><span>de ${D.vigentesN} jóvenes vigentes atendidos</span></div>
-                    <div class="hist-stat"><b>${D.vigentesN}</b><span>Jóvenes vigentes</span></div>
-                    <div class="hist-stat"><b>${D.sinContacto.length}</b><span>Ingresos sin contacto</span></div>
+                <div class="rs-panel">
+                    <div class="rs-main">
+                        <div class="rs-total"><b>${total}</b><span>Total de intervenciones</span></div>
+                        <div class="rs-var">${variacion}</div>
+                    </div>
+                    <div class="rs-grid">
+                        <div class="rs-item d"><span>Directas</span><b>${dir}</b><small>${pct(dir, total)}</small></div>
+                        <div class="rs-item i"><span>Indirectas</span><b>${ind}</b><small>${pct(ind, total)}</small></div>
+                        <div class="rs-item ok"><span>Listas</span><b>${listas}</b></div>
+                        <div class="rs-item pen"><span>Pendientes</span><b>${total - listas}</b></div>
+                    </div>
+                    <div class="rs-jov">
+                        <span>👥 Jóvenes vigentes: <b>${D.vigentesN}</b></span>
+                        <span>✅ Atendidos: <b>${atendidos}</b> de ${D.vigentesN}</span>
+                        <span>📵 Ingresos sin contacto: <b>${D.sinContacto.length}</b></span>
+                    </div>
                 </div>
                 ${noVigConInt.length ? `<div class="inf-note">ℹ️ Además hay ${noVigConInt.length} joven(es) con intervenciones en el período que no figuran como vigentes (egresados o nombres que ya no están en la lista): ${noVigConInt.map(j => `<strong>${escHtml(j.nombre)}</strong> (${j.total})`).join(', ')}. Sus intervenciones sí están en el total del período.</div>` : ''}
-                ${barraPct(dir, ind)}
-                <div class="pct-legend"><b class="d">■ Directas ${pct(dir, total)}</b> &nbsp; <b class="i">■ Indirectas ${pct(ind, total)}</b> &nbsp;·&nbsp; ${variacion}</div>
 
                 <h3 class="hist-sub">📈 2. Gráficos</h3>
                 ${bloqueGraficos}
 
                 <h3 class="hist-sub">👤 3. Por joven: directas e indirectas, y detalle por tipo</h3>
                 <div class="inf-note">Plazo de registro: <strong>3 días hábiles</strong> (calendario bancario chileno: lunes a viernes, sin feriados ni 31 de diciembre) contados desde el día siguiente a la intervención. Aplica a intervenciones desde el 01/10/2026. Si se registra después, queda <strong>fuera de plazo</strong>.<br>${textoFeriadosPeriodo(D.desde, D.hasta)}</div>
-                ${total ? `<div class="table-container"><table>
-                    <thead><tr><th>Joven</th><th>Total</th><th>Directas</th><th>Indirectas</th><th>Proporción</th><th>Por tipo de intervención</th><th>Fecha de registro y plazo</th></tr></thead>
-                    <tbody>${filasJov}</tbody></table></div>
-                    ` : vacio}
+                ${total ? `<div class="table-container"><table class="jv-tabla">
+                    <thead><tr><th>Joven</th><th>Total</th><th>Directas</th><th>Indirectas</th><th>Detalle por tipo <small>(verde directa · amarillo indirecta)</small></th><th>Registros</th></tr></thead>
+                    <tbody>${filasJov}</tbody></table></div>` : vacio}
                 ${sinAct.length ? `<details class="sin-act"><summary>😴 Sin intervenciones en todo ${nombreMes(D.mes)} (${sinAct.length}) — ver nombres</summary><div class="sin-grid">${sinAct.map(n => `<span>${n}</span>`).join('')}</div></details>` : `<div class="inf-note">✅ Todos los jóvenes vigentes tienen al menos una intervención en ${nombreMes(D.mes)}.</div>`}
                 ${D.sinContacto.length ? `<details class="sin-act"><summary>📵 Ingresos sin contacto (${D.sinContacto.length}) — ver nombres</summary><div class="sin-grid">${D.sinContacto.map(n => `<span>${escHtml(n)}</span>`).join('')}</div></details>` : ''}
 
                 <h3 class="hist-sub">📅 4. Acumulado de ${nombreMes(D.mes)} (totalidad del mes)</h3>
-                <div class="hist-stats">
-                    <div class="hist-stat"><b>${mesTotal}</b><span>Total del mes</span></div>
-                    <div class="hist-stat"><b>${mesDir}</b><span>Directas (${pct(mesDir, mesTotal)})</span></div>
-                    <div class="hist-stat"><b>${mesTotal - mesDir}</b><span>Indirectas (${pct(mesTotal - mesDir, mesTotal)})</span></div>
-                    <div class="hist-stat ${mesInc ? 'mal' : ''}"><b>${mesInc}</b><span>Incumplimientos</span></div>
-                    <div class="hist-stat"><b>${mesRiesgo}</b><span>En riesgo</span></div>
-                    <div class="hist-stat"><b>${mesFlex}</b><span>Flexibilizados</span></div>
-                </div>
-                ${barraPct(mesDir, mesTotal - mesDir)}
-                <div class="pct-legend"><b class="d">■ Directas ${pct(mesDir, mesTotal)}</b> &nbsp; <b class="i">■ Indirectas ${pct(mesTotal - mesDir, mesTotal)}</b></div>
+                ${panelStats(mesTotal, 'Total del mes', [
+                    { c: 'd', l: 'Directas', n: mesDir, s: pct(mesDir, mesTotal) },
+                    { c: 'i', l: 'Indirectas', n: mesTotal - mesDir, s: pct(mesTotal - mesDir, mesTotal) },
+                    { c: mesInc ? 'mal' : 'pen', l: 'Incumplimientos', n: mesInc },
+                    { c: 'riesgo', l: 'En riesgo', n: mesRiesgo },
+                    { c: 'flex', l: 'Flexibilizados', n: mesFlex }
+                ])}
                 <div class="chart-grid">
                     <div class="chart-card"><h4><span>Por joven — ${nombreMes(D.mes)}</span>${tot(mesTotal)}</h4>${gMesJoven.length ? graficoBarrasH(gMesJoven, META_MENSUAL) + leyMeta : '<div class="inf-note">Sin jóvenes</div>'}</div>
                     <div class="chart-card"><h4><span>Por tipo — ${nombreMes(D.mes)}</span>${tot(mesTotal)}</h4>${mesTotal ? graficoBarrasH(gTipoMes) + leyDI : sinDatos}</div>
@@ -3255,7 +3291,6 @@
                                 <input type="text" style="flex:1;min-width:240px;width:auto;" value="${escHtml(notaExclusion)}" placeholder="opcional (si se deja vacío se usa la nota automática de ingresos sin contacto)" onchange="setNotaExclusion(this.value)"></div>
                         </div>
                         <div class="tablero-acciones">
-                            <button class="btn-small" style="background:#fd7e14" onclick="presetCeroUno()">0 a 1 en las tres</button>
                             <button class="btn-small" style="background:#fd7e14" onclick="presetBajoMeta()">Total menor a ${META_MENSUAL}</button>
                             <button class="btn-small" style="background:#6c757d" onclick="limpiarRangosMes()">Limpiar filtro</button>
                             ${hayRango ? '<button class="btn-small btn-excel-joven" onclick="imprimirSeleccion()">🖨️ Imprimir solo esta hoja</button>' : ''}
@@ -3265,6 +3300,22 @@
                 </div>
 
                 <div class="inf-note">Las intervenciones se agrupan por la <strong>fecha de la intervención</strong> en el rango de fechas elegido. El acumulado y el cumplimiento mensual corresponden al mes de la fecha final y cuentan todas las intervenciones del mes, estén pendientes o listas.</div>`;
+        }
+
+        // Directas del mes en curso por joven (vigentes y egresados del mes): solo nombre y cantidad
+        function exportarDirectasMes() {
+            const mes = getFechaLocal().slice(0, 7);
+            const filas = resumenMes(mes);
+            // Ingresos sin contacto: resumenMes los omite mientras no tienen intervenciones, aquí van con 0
+            jovenesVigentes().filter(j => j.sinContacto && !filas.some(r => r.nombre === j.nombre)).forEach(j => filas.push({ nombre: j.nombre, directas: 0 }));
+            filas.sort((a, b) => b.directas - a.directas || a.nombre.localeCompare(b.nombre, 'es'));
+            if (!filas.length) { alert('No hay jóvenes para exportar'); return; }
+            const q = x => `"${String(x).replace(/"/g, '""')}"`;
+            let csv = 'Joven,Directas\n' + filas.map(r => `${q(r.nombre)},${r.directas}`).join('\n') + '\n';
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv' }));
+            link.download = `directas_${mes}.csv`;
+            link.click();
         }
 
         function exportarInforme() {
