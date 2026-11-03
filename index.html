@@ -1109,14 +1109,18 @@
                                 <span>📵 Ingresos sin contacto: <b id="statSinContacto">0</b></span>
                             </div>
                         </div>
-                        <div style="margin-top:10px;"><button class="btn-small btn-excel" onclick="exportarDirectasMes()">📥 Exportar directas del mes (jóvenes, egresados e ingresos sin contacto)</button></div>
+                        <div style="margin-top:10px;"><button class="btn-small btn-excel" onclick="abrirExpMes()">📥 Exportar directas por mes (todos los jóvenes atendidos, incluso con 0)</button></div>
                     </div>
 
                     <!-- BUSCADORES -->
                     <div class="search-section">
                         <div class="search-group">
                             <label>🔍 Buscar por Joven</label>
-                            <input type="text" id="buscarJoven" placeholder="Escribe el nombre del joven..." onkeyup="aplicarFiltrosGlobales()">
+                            <div class="combo-search">
+                                <input type="text" id="buscarJoven" placeholder="Escribe el nombre del joven..." autocomplete="off">
+                                <div class="combo-dropdown" id="buscarJovenDropdown"></div>
+                            </div>
+                            <select id="buscarJovenSelect" style="display:none;"></select>
                         </div>
                         <div class="search-group">
                             <label>📅 Fecha Desde</label>
@@ -1332,6 +1336,20 @@
             <div class="modal-actions">
                 <button class="btn-small" style="background:#6c757d;" onclick="cerrarEgreso()">Cancelar</button>
                 <button class="btn-small" onclick="guardarEgreso()">📦 Archivar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EXPORTAR DIRECTAS POR MES -->
+    <div class="modal-overlay" id="modalExpMes" onclick="if(event.target===this)cerrarExpMes()">
+        <div class="modal-box small">
+            <div class="modal-head"><h3>📥 Exportar directas por mes</h3></div>
+            <p style="color:#6c757d;font-size:0.9em;margin-bottom:8px;">Incluye a todos los jóvenes atendidos en el mes, también los que no tuvieron ninguna intervención (con 0), los egresados del mes y los ingresos sin contacto.</p>
+            <label for="expMesSelect">Mes</label>
+            <select id="expMesSelect" style="width:100%;padding:10px;border:2px solid #e0e0e0;border-radius:8px;margin:6px 0 15px;"></select>
+            <div class="modal-actions">
+                <button class="btn-small" style="background:#6c757d;" onclick="cerrarExpMes()">Cancelar</button>
+                <button class="btn-small btn-excel" onclick="exportarDirectasMes()">📥 Exportar</button>
             </div>
         </div>
     </div>
@@ -1590,9 +1608,8 @@
             if (!document.getElementById('fechaDesde').value) {
                 document.getElementById('fechaDesde').value = mesAtras;
             }
-            if (!document.getElementById('fechaHasta').value) {
-                document.getElementById('fechaHasta').value = hoy;
-            }
+            // "Hasta" queda vacío por defecto (sin tope): así no se pierden intervenciones con fecha posterior a hoy
+            // ni cuando la página lleva abierta desde el día anterior
         }
 
         function mostrarError(mensaje) {
@@ -1622,35 +1639,43 @@
         }
 
         // Aplicar filtros globales (búsqueda y fechas)
-        function aplicarFiltrosGlobales() {
-            filtroBusquedaJoven = document.getElementById('buscarJoven').value.toLowerCase();
+        // Lee los filtros desde los campos (así panel, gráficos y exportaciones siempre usan los mismos)
+        function leerFiltrosGlobales() {
+            filtroBusquedaJoven = document.getElementById('buscarJoven').value.trim().toLowerCase();
             filtroFechaDesde = document.getElementById('fechaDesde').value;
             filtroFechaHasta = document.getElementById('fechaHasta').value;
-            
+        }
+
+        function aplicarFiltrosGlobales() {
+            leerFiltrosGlobales();
+            actualizarEstadisticas();
             actualizarGraficoPorTipo();
             actualizarGraficoPorJoven();
             actualizarGraficoCircular();
         }
-        
+
+        // Limpiar: quita el nombre y las fechas (muestra todo)
         function limpiarFiltrosGlobales() {
-            document.getElementById('buscarJoven').value = '';
-            setDefaultDates();
+            if (window.buscarJovenCombo) window.buscarJovenCombo.reset(); else document.getElementById('buscarJoven').value = '';
+            document.getElementById('fechaDesde').value = '';
+            document.getElementById('fechaHasta').value = '';
             aplicarFiltrosGlobales();
         }
 
         // Obtener intervenciones filtradas por búsqueda y fechas
-        function getIntervencionesFiltradas() {
-            // Las intervenciones archivadas no cuentan en el panel (siguen en histórico e informes)
-            let filtradas = intervenciones.filter(cuentaEnPanel);
+        function getIntervencionesFiltradas(incluirExcluidas) {
+            leerFiltrosGlobales();
+            // Las intervenciones archivadas o de jóvenes egresados no cuentan en el panel (siguen en histórico e informes)
+            let filtradas = incluirExcluidas ? [...intervenciones] : intervenciones.filter(cuentaEnPanel);
             
             if (filtroBusquedaJoven) {
                 filtradas = filtradas.filter(i => i.joven.toLowerCase().includes(filtroBusquedaJoven));
             }
             if (filtroFechaDesde) {
-                filtradas = filtradas.filter(i => i.fecha >= filtroFechaDesde);
+                filtradas = filtradas.filter(i => (i.fecha || '').slice(0, 10) >= filtroFechaDesde);
             }
             if (filtroFechaHasta) {
-                filtradas = filtradas.filter(i => i.fecha <= filtroFechaHasta);
+                filtradas = filtradas.filter(i => (i.fecha || '').slice(0, 10) <= filtroFechaHasta);   // se compara solo la parte AAAA-MM-DD, así el día "Hasta" siempre se incluye completo
             }
             
             return filtradas;
@@ -1792,6 +1817,16 @@
                 dropdownId: 'jovenDropdown',
                 obtenerItems: () => jovenesVigentes()
             });
+
+            // Buscar por joven (predictivo): sugiere mientras escribes y filtra panel y gráficos
+            window.buscarJovenCombo = crearComboBuscador({
+                inputId: 'buscarJoven',
+                selectId: 'buscarJovenSelect',
+                dropdownId: 'buscarJovenDropdown',
+                obtenerItems: () => jovenesVigentes(),
+                onSeleccionar: () => aplicarFiltrosGlobales()
+            });
+            document.getElementById('buscarJoven').addEventListener('input', aplicarFiltrosGlobales);
 
             window.tipoCombo = crearComboBuscador({
                 inputId: 'tipoSearchInput',
@@ -2162,10 +2197,11 @@
 
         // ACTUALIZAR ESTADÍSTICAS GENERALES
         function actualizarEstadisticas() {
-            const activas = intervenciones.filter(cuentaEnPanel);
+            // Mismos filtros (joven y fechas) que los gráficos, para que todo coincida
+            const activas = getIntervencionesFiltradas();
             const total = activas.length;
             const directas = activas.filter(i => i.parametro === 'directa').length;
-            const indirectas = activas.filter(i => i.parametro === 'indirecta').length;
+            const indirectas = total - directas;
             const listas = activas.filter(i => i.estado === 'lista').length;
             const pendientes = activas.filter(i => i.estado === 'pendiente').length;
 
@@ -2189,8 +2225,8 @@
             const intervencionesFiltradas = getIntervencionesFiltradas();
             
             const directas = intervencionesFiltradas.filter(i => i.parametro === 'directa').length;
-            const indirectas = intervencionesFiltradas.filter(i => i.parametro === 'indirecta').length;
-            const total = directas + indirectas;
+            const indirectas = intervencionesFiltradas.length - directas;   // todo lo que no es directa (así no se pierde ninguna)
+            const total = intervencionesFiltradas.length;
             
             if (total === 0) {
                 container.innerHTML = '<div class="no-data">No hay datos para mostrar</div>';
@@ -2303,7 +2339,11 @@
             const intervencionesFiltradas = getIntervencionesFiltradas();
             const conteo = {};
             tipos.forEach(t => conteo[t.nombre] = { cantidad: 0, parametro: t.parametro });
-            intervencionesFiltradas.forEach(i => { if (conteo[i.tipo]) conteo[i.tipo].cantidad++; });
+            intervencionesFiltradas.forEach(i => {
+                // Si el tipo fue eliminado de la lista, igual se cuenta (para que el total coincida)
+                if (!conteo[i.tipo]) conteo[i.tipo] = { cantidad: 0, parametro: i.parametro === 'directa' ? 'directa' : 'indirecta' };
+                conteo[i.tipo].cantidad++;
+            });
             
             const ordenado = Object.keys(conteo).sort((a, b) => conteo[b].cantidad - conteo[a].cantidad);
             const max = Math.max(...Object.values(conteo).map(v => v.cantidad), 1);
@@ -2345,7 +2385,9 @@
 
             const datos = {};
             jovenesFiltrados.forEach(j => datos[j.nombre] = { directas: 0, indirectas: 0, total: 0 });
-            intervencionesFiltradas.forEach(i => { 
+            intervencionesFiltradas.forEach(i => {
+                // Si el nombre ya no está en la lista de jóvenes, igual se cuenta (para que el total coincida)
+                if (!datos[i.joven]) datos[i.joven] = { directas: 0, indirectas: 0, total: 0 };
                 if (datos[i.joven]) {
                     if (i.parametro === 'directa') datos[i.joven].directas++;
                     else datos[i.joven].indirectas++;
@@ -2394,10 +2436,11 @@
 
         // Exportar resumen de Directas vs Indirectas
         function exportarResumenDirectasIndirectas() {
-            const directas = intervenciones.filter(i => i.parametro === 'directa').length;
-            const indirectas = intervenciones.filter(i => i.parametro === 'indirecta').length;
+            const _f = getIntervencionesFiltradas();
+            const directas = _f.filter(i => i.parametro === 'directa').length;
+            const indirectas = _f.filter(i => i.parametro === 'indirecta').length;
             const total = directas + indirectas;
-            
+
             let csv = "Tipo,Cantidad,Porcentaje\n";
             csv += `Directas,${directas},${total > 0 ? ((directas/total)*100).toFixed(1) : 0}%\n`;
             csv += `Indirectas,${indirectas},${total > 0 ? ((indirectas/total)*100).toFixed(1) : 0}%\n`;
@@ -3302,12 +3345,31 @@
                 <div class="inf-note">Las intervenciones se agrupan por la <strong>fecha de la intervención</strong> en el rango de fechas elegido. El acumulado y el cumplimiento mensual corresponden al mes de la fecha final y cuentan todas las intervenciones del mes, estén pendientes o listas.</div>`;
         }
 
-        // Directas del mes en curso por joven (vigentes y egresados del mes): solo nombre y cantidad
-        function exportarDirectasMes() {
-            const mes = getFechaLocal().slice(0, 7);
-            const filas = resumenMes(mes);
-            // Ingresos sin contacto: resumenMes los omite mientras no tienen intervenciones, aquí van con 0
-            jovenesVigentes().filter(j => j.sinContacto && !filas.some(r => r.nombre === j.nombre)).forEach(j => filas.push({ nombre: j.nombre, directas: 0 }));
+        // Directas por mes elegido: todos los jóvenes atendidos (vigentes, egresados del mes e ingresos sin contacto), incluso con 0
+        function abrirExpMes() {
+            const hoy = mesActual();
+            const set = new Set(mesesDisponibles());
+            let m = hoy;
+            for (let k = 0; k < 12; k++) { set.add(m); m = mesAnterior(m); }
+            const lista = [...set].sort().reverse();
+            const sel = document.getElementById('expMesSelect');
+            const previo = sel.value;
+            sel.innerHTML = lista.map(x => `<option value="${x}">${nombreMes(x)}</option>`).join('');
+            sel.value = previo && lista.includes(previo) ? previo : hoy;
+            document.getElementById('modalExpMes').classList.add('open');
+        }
+        function cerrarExpMes() { document.getElementById('modalExpMes').classList.remove('open'); }
+
+        async function exportarDirectasMes() {
+            const mes = document.getElementById('expMesSelect').value;
+            if (!mes) { alert('Elige un mes'); return; }
+            if (mes < fechaCorte().slice(0, 7)) await asegurarHistorial();   // meses antiguos: traer el historial primero
+            const filas = resumenMes(mes).map(r => ({ nombre: r.nombre, directas: r.directas }));
+            const ya = n => filas.some(r => r.nombre === n);
+            // Jóvenes vigentes sin ninguna intervención (resumenMes omite los ingresos sin contacto): van con 0
+            jovenesVigentes().filter(j => !ya(j.nombre)).forEach(j => filas.push({ nombre: j.nombre, directas: 0 }));
+            // Egresados en ese mismo mes que no tuvieron intervenciones: también van con 0
+            jovenes.filter(j => j.archivado && egresoMesDe(j.nombre) === mes && !ya(j.nombre)).forEach(j => filas.push({ nombre: j.nombre, directas: 0 }));
             filas.sort((a, b) => b.directas - a.directas || a.nombre.localeCompare(b.nombre, 'es'));
             if (!filas.length) { alert('No hay jóvenes para exportar'); return; }
             const q = x => `"${String(x).replace(/"/g, '""')}"`;
@@ -3316,6 +3378,7 @@
             link.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv' }));
             link.download = `directas_${mes}.csv`;
             link.click();
+            cerrarExpMes();
         }
 
         function exportarInforme() {
