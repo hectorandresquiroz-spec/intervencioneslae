@@ -3416,7 +3416,14 @@ html.ap-dark .modal-overlay{ background:rgba(0,0,0,.55) !important; }
         // Ingreso sin contacto: joven vigente que ingresó pero aún no tiene contacto (no cuenta como vigente en el informe)
         function esSinContacto(n) { const j = getJoven(n); return !!(j && !j.archivado && j.sinContacto); }
         function egresoMesDe(n) { const j = getJoven(n); return j && j.archivado ? (j.egresoEn ? j.egresoEn.slice(0, 7) : mesActual()) : ''; }
-        function cuentaEnPanel(i) { return !i.archivado && !esEgresado(i.joven); }
+        // Un joven egresado a mitad de mes sigue contando (panel e informe) hasta que termine ese mes:
+        // sus intervenciones del mes de egreso no desaparecen al archivarlo. Al cerrar el mes salen del panel (siguen en histórico e informes por período).
+        function egresoEnCurso(n) { const eg = egresoMesDe(n); return !!eg && eg >= mesActual(); }
+        function cuentaEnPanel(i) {
+            if (i.archivado) return false;
+            if (!esEgresado(i.joven)) return true;
+            return egresoEnCurso(i.joven) && (i.fecha || '').slice(0, 7) >= egresoMesDe(i.joven);
+        }
 
         function estadoCumplimiento(m, joven, total) {
             if (total >= META_MENSUAL) return { tipo: 'ok' };
@@ -3708,7 +3715,7 @@ html.ap-dark .modal-overlay{ background:rgba(0,0,0,.55) !important; }
         }
         // Cada fila del tablero (Total / Directas / Indirectas) genera su propia selección de jóvenes
         function seleccionesTablero(resMes) {
-            const base = resMes.filter(r => r.tipo !== 'egreso');
+            const base = resMes.filter(r => r.tipo !== 'egreso' || egresoEnCurso(r.nombre));   // el egresado del mes en curso se mantiene hasta que termine el mes
             const campo = { tot: 'total', dir: 'directas', ind: 'indirectas' };
             return ['tot', 'dir', 'ind'].filter(k => rangoMes[k][0] !== null || rangoMes[k][1] !== null).map(k => {
                 const [mn, mx] = rangoMes[k];
@@ -3721,7 +3728,7 @@ html.ap-dark .modal-overlay{ background:rgba(0,0,0,.55) !important; }
         function datosObservaciones(D) {
             const hoy = getFechaLocal(), ref = D.hasta <= hoy ? D.hasta : hoy;
             const intsObs = D.intsMes.filter(i => i.fecha <= ref);
-            const res = resumenMes(D.mes).filter(r => r.tipo !== 'egreso').map(r => {
+            const res = resumenMes(D.mes).filter(r => r.tipo !== 'egreso' || egresoEnCurso(r.nombre)).map(r => {
                 const p = intsObs.filter(i => i.joven === r.nombre);
                 const d = p.filter(i => i.parametro === 'directa').length;
                 return { ...r, total: p.length, directas: d, indirectas: p.length - d };
@@ -4133,11 +4140,16 @@ html.ap-dark .modal-overlay{ background:rgba(0,0,0,.55) !important; }
             const vacio = '<div class="inf-note">No hay intervenciones registradas en este período.</div>';
             document.getElementById('informeContenido').innerHTML = `
                 <div class="inf-head">
-                    <h2>Informe de intervenciones: ${D.desde === D.hasta ? formatearFechaMostrar(D.desde) : formatearFechaMostrar(D.desde) + ' al ' + formatearFechaMostrar(D.hasta)}</h2>
-                    <div>${escHtml(document.getElementById('programTitle').textContent)} · Generado el ${formatearFechaMostrar(getFechaLocal())}</div>
+                    <div class="inf-eyebrow">Informe de intervenciones</div>
+                    <h2>${D.desde === D.hasta ? formatearFechaMostrar(D.desde) : formatearFechaMostrar(D.desde) + ' &rarr; ' + formatearFechaMostrar(D.hasta)}</h2>
+                    <div class="inf-meta">
+                        <span>${escHtml(document.getElementById('programTitle').textContent)}</span>
+                        <span>${D.nDias} ${D.nDias === 1 ? 'día' : 'días'}</span>
+                        <span>Generado el ${formatearFechaMostrar(getFechaLocal())}</span>
+                    </div>
                 </div>
 
-                <h3 class="hist-sub">📊 1. Resumen del período</h3>
+                <h3 class="hist-sub"><span class="sec-n">1</span>Resumen del período</h3>
                 <div class="rs-panel">
                     <div class="rs-main">
                         <div class="rs-total"><b>${total}</b><span>Total de intervenciones</span></div>
@@ -4155,20 +4167,18 @@ html.ap-dark .modal-overlay{ background:rgba(0,0,0,.55) !important; }
                         <span>📵 Ingresos sin contacto: <b>${D.sinContacto.length}</b></span>
                     </div>
                 </div>
-                ${noVigConInt.length ? `<div class="inf-note">ℹ️ Además hay ${noVigConInt.length} joven(es) con intervenciones en el período que no figuran como vigentes (egresados o nombres que ya no están en la lista): ${noVigConInt.map(j => `<strong>${escHtml(j.nombre)}</strong> (${j.total})`).join(', ')}. Sus intervenciones sí están en el total del período.</div>` : ''}
 
-                <h3 class="hist-sub">📈 2. Gráficos</h3>
+                <h3 class="hist-sub"><span class="sec-n">2</span>Gráficos</h3>
                 ${bloqueGraficos}
 
-                <h3 class="hist-sub">👤 3. Por joven: directas e indirectas, y detalle por tipo</h3>
-                <div class="inf-note">Plazo de registro: <strong>3 días hábiles</strong> (calendario bancario chileno: lunes a viernes, sin feriados ni 31 de diciembre) contados desde el día siguiente a la intervención. Aplica a intervenciones desde el 01/10/2026. Si se registra después, queda <strong>fuera de plazo</strong>.<br>${textoFeriadosPeriodo(D.desde, D.hasta)}</div>
+                <h3 class="hist-sub"><span class="sec-n">3</span>Detalle por joven</h3>
                 ${total ? `<div class="table-container"><table class="jv-tabla">
                     <thead><tr><th>Joven</th><th>Total</th><th>Directas</th><th>Indirectas</th><th>Detalle por tipo <small>(verde directa · amarillo indirecta)</small></th><th>Registros</th></tr></thead>
                     <tbody>${filasJov}</tbody></table></div>` : vacio}
                 ${sinAct.length ? `<details class="sin-act"><summary>😴 Sin intervenciones en todo ${nombreMes(D.mes)} (${sinAct.length}) — ver nombres</summary><div class="sin-grid">${sinAct.map(n => `<span>${n}</span>`).join('')}</div></details>` : `<div class="inf-note">✅ Todos los jóvenes vigentes tienen al menos una intervención en ${nombreMes(D.mes)}.</div>`}
                 ${D.sinContacto.length ? `<details class="sin-act"><summary>📵 Ingresos sin contacto (${D.sinContacto.length}) — ver nombres</summary><div class="sin-grid">${D.sinContacto.map(n => `<span>${escHtml(n)}</span>`).join('')}</div></details>` : ''}
 
-                <h3 class="hist-sub">📅 4. Acumulado de ${nombreMes(D.mes)} (totalidad del mes)</h3>
+                <h3 class="hist-sub"><span class="sec-n">4</span>Acumulado de ${nombreMes(D.mes)}</h3>
                 ${panelStats(mesTotal, 'Total del mes', [
                     { c: 'd', l: 'Directas', n: mesDir, s: pct(mesDir, mesTotal) },
                     { c: 'i', l: 'Indirectas', n: mesTotal - mesDir, s: pct(mesTotal - mesDir, mesTotal) },
@@ -4182,9 +4192,9 @@ html.ap-dark .modal-overlay{ background:rgba(0,0,0,.55) !important; }
                 </div>
 
                 <div id="seccionSeleccion" class="${hayRango ? 'sel-pagina' : ''}">
-                    <h3 class="hist-sub ${hayRango ? '' : 'no-print'}">🎛️ 5. Observaciones — ${nombreMes(D.mes)}</h3>
+                    <h3 class="hist-sub ${hayRango ? '' : 'no-print'}"><span class="sec-n">5</span>Observaciones · ${nombreMes(D.mes)}</h3>
                     <div class="tablero no-print">
-                        <div class="tablero-titulo">🎛️ Tablero: cada fila genera su propio gráfico en una sola hoja (deja vacío para no usar esa fila)</div>
+                        <div class="tablero-titulo">Tablero de rangos <small>· cada fila genera su propio gráfico; déjala vacía para no usarla</small></div>
                         <div class="tablero-grid">
                             ${[['tot', 'Total'], ['dir', 'Directas'], ['ind', 'Indirectas']].map(([k, t]) => `<div class="tablero-fila"><span>${t}</span>
                                 <label>desde <input type="number" min="0" value="${rangoMes[k][0] === null ? '' : rangoMes[k][0]}" onchange="setRangoMes('${k}', 0, this.value)"></label>
@@ -4198,10 +4208,9 @@ html.ap-dark .modal-overlay{ background:rgba(0,0,0,.55) !important; }
                             ${hayRango ? '<button class="btn-small btn-excel-joven" onclick="imprimirSeleccion()">🖨️ Imprimir solo esta hoja</button>' : ''}
                         </div>
                     </div>
-                    ${hayRango ? bloquesObs : '<div class="inf-note no-print">Define un rango en el tablero: los gráficos de Total, Directas e Indirectas aparecerán juntos en una hoja propia y se imprimirán dentro del informe.</div>'}
+                    ${hayRango ? bloquesObs : ''}
                 </div>
-
-                <div class="inf-note">Las intervenciones se agrupan por la <strong>fecha de la intervención</strong> en el rango de fechas elegido. El acumulado y el cumplimiento mensual corresponden al mes de la fecha final y cuentan todas las intervenciones del mes, estén pendientes o listas.</div>`;
+`;
         }
 
         // Directas por mes elegido: todos los jóvenes atendidos (vigentes, egresados del mes e ingresos sin contacto), incluso con 0
@@ -5140,6 +5149,792 @@ actualizarTabla = function () {
     }
     tema(false);
     if (mq) { if (mq.addEventListener) mq.addEventListener('change', function () { tema(true); }); else if (mq.addListener) mq.addListener(function () { tema(true); }); }
+})();
+</script>
+
+<style id="infLimpio">
+/* ===== Informe por fecha: diseño limpio y ordenado (solo afecta al informe) ===== */
+#modalInforme{ --i-card:#fff; --i-soft:#f6f7fb; --i-line:#e5e8f0; --i-text:#1d1d1f; --i-muted:#6b7280; --i-accent:#5b67d8; }
+html.ap-dark #modalInforme{ --i-card:#1c1c1e; --i-soft:#262629; --i-line:#3a3a3c; --i-text:#f5f5f7; --i-muted:#98989d; --i-accent:#7d8cff; }
+#modalInforme .modal-box{ max-width:1040px; padding:26px 32px 34px; }
+#modalInforme .modal-head{ margin-bottom:14px; }
+#modalInforme .modal-head h2{ font-size:1.12em; font-weight:700; letter-spacing:-.01em; }
+
+/* controles */
+#modalInforme .inf-nav{ background:var(--i-soft); border:1px solid var(--i-line); border-radius:14px; padding:10px 12px; gap:8px; margin-bottom:24px; }
+#modalInforme .inf-nav label{ font-size:.8em; color:var(--i-muted) !important; }
+#modalInforme .inf-nav input[type="date"]{ padding:6px 10px; border-radius:9px; font-size:.9em; }
+#modalInforme .inf-nav .btn-small{ padding:7px 13px; font-size:.8em; }
+
+/* encabezado */
+#modalInforme .inf-head{ background:linear-gradient(135deg,#232a5c 0%,#4a2f7c 100%) !important; border-radius:18px !important; padding:24px 28px; margin-bottom:8px; }
+#modalInforme .inf-eyebrow{ font-size:.7em; letter-spacing:.16em; text-transform:uppercase; font-weight:600; opacity:.75; margin-bottom:6px; }
+#modalInforme .inf-head h2{ font-size:1.75em; font-weight:700; letter-spacing:-.02em; margin:0 0 14px; }
+#modalInforme .inf-meta{ display:flex; flex-wrap:wrap; gap:8px; }
+#modalInforme .inf-meta span{ background:rgba(255,255,255,.16); border-radius:999px; padding:3px 12px; font-size:.78em; font-weight:500; }
+
+/* títulos de sección */
+#modalInforme .hist-sub{ display:flex; align-items:center; gap:12px; margin:36px 0 16px; padding-bottom:10px; border-bottom:1px solid var(--i-line); font-size:1.02em; font-weight:700; letter-spacing:-.005em; color:var(--i-text) !important; }
+#modalInforme .hist-sub .sec-n{ flex:none; display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:8px; background:var(--i-accent); color:#fff; font-size:.82em; font-weight:700; }
+
+/* resumen y acumulado */
+#modalInforme .rs-panel{ background:var(--i-card) !important; border:1px solid var(--i-line) !important; border-radius:16px !important; padding:20px 22px !important; margin-bottom:8px; }
+#modalInforme .rs-main{ display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding-bottom:16px; margin-bottom:16px; border-bottom:1px solid var(--i-line); }
+#modalInforme .rs-total{ display:flex; align-items:baseline; gap:12px; }
+#modalInforme .rs-total b{ font-size:2.6em !important; font-weight:700; letter-spacing:-.03em; color:var(--i-text) !important; }
+#modalInforme .rs-total span{ font-size:.9em; font-weight:600; color:var(--i-muted) !important; }
+#modalInforme .rs-var span{ display:inline-block; padding:4px 12px; border-radius:999px; background:var(--i-soft); border:1px solid var(--i-line); font-size:.8em; }
+#modalInforme .rs-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; }
+#modalInforme .rs-item{ display:flex; flex-direction:column; align-items:flex-start; gap:2px; background:var(--i-soft) !important; color:var(--i-text) !important; border-radius:12px !important; border-left:4px solid #adb5bd; padding:12px 14px !important; }
+#modalInforme .rs-item:hover{ transform:none; box-shadow:none; }
+#modalInforme .rs-item span{ flex:none; font-size:.7em; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--i-muted) !important; }
+#modalInforme .rs-item b{ font-size:1.7em; line-height:1.1; font-weight:700; color:var(--i-text) !important; }
+#modalInforme .rs-item small{ font-size:.78em; opacity:1; color:var(--i-muted) !important; }
+#modalInforme .rs-item.d{ border-left-color:#34c759; } #modalInforme .rs-item.i{ border-left-color:#ff9f0a; }
+#modalInforme .rs-item.ok{ border-left-color:#0a84ff; } #modalInforme .rs-item.pen{ border-left-color:#8e8e93; }
+#modalInforme .rs-item.mal{ border-left-color:#ff453a; } #modalInforme .rs-item.flex{ border-left-color:#bf5af2; }
+#modalInforme .rs-item.riesgo{ border-left-color:#ff9500; }
+#modalInforme .rs-jov{ display:flex; flex-wrap:wrap; gap:8px; margin-top:16px; padding-top:0; border-top:none !important; }
+#modalInforme .rs-jov span{ background:var(--i-soft); border:1px solid var(--i-line); border-radius:999px; padding:5px 14px; font-size:.82em; color:var(--i-muted) !important; }
+#modalInforme .rs-jov b{ color:var(--i-text) !important; }
+
+/* gráficos */
+#modalInforme .chart-grid{ gap:16px; margin:0; }
+#modalInforme .chart-card{ background:var(--i-card) !important; border:1px solid var(--i-line); border-radius:16px !important; padding:16px 18px; }
+#modalInforme .chart-card:hover{ transform:none; box-shadow:none; }
+#modalInforme .chart-card h4{ font-size:.76em; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--i-muted) !important; margin-bottom:14px; }
+#modalInforme .chart-total{ background:var(--i-soft) !important; color:var(--i-text) !important; border:1px solid var(--i-line); text-transform:none; letter-spacing:0; font-weight:700; }
+
+/* tabla por joven */
+#modalInforme .table-container{ border:1px solid var(--i-line); border-radius:14px; overflow-x:auto; }
+#modalInforme table.jv-tabla{ font-size:.88em; width:100%; border-collapse:separate; border-spacing:0; }
+#modalInforme .jv-tabla thead th{ background:var(--i-soft) !important; color:var(--i-muted) !important; font-size:.72em; font-weight:700; text-transform:uppercase; letter-spacing:.06em; padding:10px 12px; text-align:left; border-bottom:1px solid var(--i-line); }
+#modalInforme .jv-tabla thead th small{ text-transform:none; letter-spacing:0; font-weight:400; }
+#modalInforme .jv-tabla td{ padding:9px 12px; border-bottom:1px solid var(--i-line) !important; }
+#modalInforme .jv-tabla tbody tr:nth-child(even) td{ background:var(--i-soft); }
+#modalInforme .jv-tabla tbody tr:hover{ background:transparent; }
+#modalInforme .jv-tabla tbody tr:last-child td{ border-bottom:none !important; }
+#modalInforme .jv-tabla .joven-link{ text-decoration:none; font-weight:600; }
+#modalInforme .jv-tabla .joven-link:hover{ text-decoration:underline; }
+
+/* avisos y plegables */
+#modalInforme .inf-note{ background:var(--i-soft) !important; border:1px solid var(--i-line); border-left:3px solid var(--i-accent); border-radius:10px; padding:10px 14px; font-size:.86em; color:var(--i-muted) !important; margin:12px 0; }
+#modalInforme .sin-act{ background:var(--i-soft) !important; border:1px solid var(--i-line); border-radius:12px !important; padding:10px 16px; margin-top:12px; }
+
+/* tablero */
+#modalInforme .tablero{ background:var(--i-soft) !important; border:1px solid var(--i-line); border-radius:14px !important; padding:16px 18px; margin:0 0 14px; }
+#modalInforme .tablero-titulo{ font-size:.78em; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--i-muted) !important; margin-bottom:12px; }
+#modalInforme .tablero-titulo small{ text-transform:none; letter-spacing:0; font-weight:400; }
+#modalInforme .tablero-fila input{ width:76px; border-radius:8px; }
+
+@media (max-width:640px){ #modalInforme .modal-box{ padding:18px 16px 26px; } #modalInforme .inf-head h2{ font-size:1.35em; } #modalInforme .rs-total b{ font-size:2.1em !important; } }
+@media print{
+    #modalInforme .jv-tabla td{ padding:3px 8px; }
+    #modalInforme .hist-sub{ margin:22px 0 12px; }
+    #modalInforme .inf-head{ padding:18px 22px; }
+    #modalInforme .chart-card, #modalInforme .rs-panel{ break-inside:avoid; }
+}
+</style>
+<!-- ===================== ASISTENTE RÁPIDO (IA local, sin red) ===================== -->
+<style>
+.aiq-fab{ position:fixed; right:22px; bottom:22px; z-index:900; width:56px; height:56px; border-radius:50%; border:none; cursor:pointer; display:none; align-items:center; justify-content:center; color:#fff; background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); box-shadow:0 8px 24px rgba(102,126,234,.45); transition:transform .15s ease, box-shadow .15s ease; }
+.aiq-fab.on{ display:flex; }
+.aiq-fab:hover{ transform:translateY(-2px) scale(1.04); box-shadow:0 12px 28px rgba(102,126,234,.55); }
+.aiq-fab svg{ width:26px; height:26px; }
+.aiq-panel{ position:fixed; right:22px; bottom:90px; z-index:900; width:410px; max-width:calc(100vw - 24px); height:560px; max-height:calc(100vh - 110px); display:none; flex-direction:column; background:#fff; color:#343a40; border-radius:18px; box-shadow:0 20px 60px rgba(0,0,0,.35); overflow:hidden; }
+.aiq-panel.open{ display:flex; animation:aiqIn .18s ease-out; }
+@keyframes aiqIn{ from{ opacity:0; transform:translateY(10px) scale(.98); } to{ opacity:1; transform:none; } }
+.aiq-head{ background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:#fff; padding:12px 14px; display:flex; align-items:center; gap:10px; }
+.aiq-head b{ font-size:1.02em; }
+.aiq-head small{ display:block; opacity:.85; font-size:.76em; font-weight:400; }
+.aiq-head .aiq-sp{ flex:1; }
+.aiq-head button{ background:rgba(255,255,255,.2); color:#fff; border:none; border-radius:8px; padding:5px 9px; cursor:pointer; font-size:.82em; }
+.aiq-head button:hover{ background:rgba(255,255,255,.35); }
+.aiq-body{ flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:10px; background:#f6f7fb; }
+.aiq-msg{ max-width:94%; padding:9px 12px; border-radius:14px; font-size:.9em; line-height:1.45; word-wrap:break-word; }
+.aiq-u{ align-self:flex-end; background:#667eea; color:#fff; border-bottom-right-radius:4px; }
+.aiq-b{ align-self:flex-start; background:#fff; border:1px solid #e3e6ef; border-bottom-left-radius:4px; }
+.aiq-b p{ margin:0 0 6px; } .aiq-b p:last-child{ margin-bottom:0; }
+.aiq-b .aiq-t{ font-weight:700; margin-bottom:4px; }
+.aiq-b .aiq-note{ color:#6c757d; font-size:.82em; margin-top:6px; }
+.aiq-b .aiq-ms{ color:#9aa0ae; font-size:.72em; margin-top:6px; text-align:right; }
+.aiq-kpis{ display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; }
+.aiq-kpi{ background:#eef0ff; color:#4b55c8; border-radius:999px; padding:2px 10px; font-size:.82em; font-weight:600; }
+.aiq-kpi.g{ background:#e6f6ea; color:#1e7e34; } .aiq-kpi.r{ background:#fde8ea; color:#b02a37; } .aiq-kpi.y{ background:#fff4d6; color:#8a6500; }
+.aiq-tw{ overflow-x:auto; margin-top:6px; }
+.aiq table{ border-collapse:collapse; width:100%; font-size:.82em; }
+.aiq th{ text-align:left; background:#f1f3f9; color:#495057; padding:5px 7px; font-weight:600; white-space:nowrap; border:none; }
+.aiq td{ padding:5px 7px; border-top:1px solid #edeff5; vertical-align:top; color:#343a40; }
+.aiq td.n, .aiq th.n{ text-align:right; white-space:nowrap; }
+.aiq-exp{ display:flex; gap:6px; margin-top:8px; }
+.aiq-exp button{ background:#eef0ff; color:#4b55c8; border:1px solid #c9ceff; border-radius:8px; padding:4px 10px; font-size:.78em; cursor:pointer; font-weight:600; }
+.aiq-exp button:hover{ background:#dfe3ff; } .aiq-exp button[disabled]{ opacity:.6; cursor:wait; }
+html.ap-dark .aiq-exp button{ background:#262a4d; border-color:#3a3a3c; color:#aab2ff; }
+.aiq-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.aiq-chip{ background:#fff; color:#4b55c8; border:1px solid #c9ceff; border-radius:999px; padding:5px 11px; font-size:.8em; cursor:pointer; }
+.aiq-chip:hover{ background:#eef0ff; }
+.aiq-foot{ display:flex; gap:8px; padding:10px; background:#fff; border-top:1px solid #e3e6ef; }
+.aiq-foot input{ flex:1; padding:10px 12px !important; border:2px solid #e0e0e0; border-radius:10px !important; font-size:.92em !important; min-width:0; }
+.aiq-foot input:focus{ outline:none; border-color:#667eea; }
+.aiq-foot button{ background:#667eea; color:#fff; border:none; border-radius:10px; padding:0 16px; cursor:pointer; font-weight:600; }
+.aiq-foot button:hover{ background:#5563d8; }
+@media (max-width:520px){ .aiq-panel{ right:8px; left:8px; width:auto; bottom:84px; } .aiq-fab{ right:14px; bottom:14px; } }
+@media print{ .aiq-fab, .aiq-panel{ display:none !important; } }
+html.ap-dark .aiq-panel{ background:#1c1c1e; color:#f5f5f7; }
+html.ap-dark .aiq-body{ background:#111114; }
+html.ap-dark .aiq-b{ background:#232326; border-color:#3a3a3c; color:#f5f5f7; }
+html.ap-dark .aiq-b .aiq-note{ color:#98989d; }
+html.ap-dark .aiq th{ background:#2c2c2e; color:#98989d !important; }
+html.ap-dark .aiq td{ border-top-color:#3a3a3c; color:#f5f5f7 !important; }
+html.ap-dark .aiq-kpi{ background:#262a4d; color:#aab2ff; } html.ap-dark .aiq-kpi.g{ background:#1d3326; color:#6fdc8c; } html.ap-dark .aiq-kpi.r{ background:#3d1d22; color:#ff8a94; } html.ap-dark .aiq-kpi.y{ background:#3d3418; color:#ffd666; }
+html.ap-dark .aiq-chip{ background:#232326; border-color:#3a3a3c; color:#aab2ff; } html.ap-dark .aiq-chip:hover{ background:#2c2c2e; }
+html.ap-dark .aiq-foot{ background:#1c1c1e; border-top-color:#3a3a3c; }
+</style>
+
+<script>
+/* ===== Asistente Rápido LAE: entiende preguntas en español y las responde con los datos que el programa ya tiene cargados.
+   No usa internet ni lee Firebase por su cuenta (solo pide el historial antiguo cuando la pregunta lo necesita). ===== */
+(function () {
+    'use strict';
+    var N = function (s) { return normalizarTexto(String(s == null ? '' : s)); };
+    var E = escHtml;
+    var MES_N = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    var MES_RE = '(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)';
+    var STOP = new Set(('de del la las los el un una unos unas y o que en con por para al a se me mi su sus es son hay tiene tienen cuantas cuantos cuanto ' +
+        'quien quienes cual cuales como esta este estos estan ha han fue ser muy todo todos todas hizo hacer sobre entre desde hasta').split(' '));
+    var ctx = {};            // contexto de la pregunta anterior (para "¿y el mes pasado?")
+    var busy = false;
+
+    /* ---------- utilidades de datos ---------- */
+    function ints(i) { return Array.isArray(i.interventores) ? i.interventores : (i.interventor ? [i.interventor] : []); }
+    function resumen(l) {
+        var d = l.filter(function (i) { return i.parametro === 'directa'; }).length;
+        return { t: l.length, d: d, i: l.length - d,
+                 li: l.filter(function (i) { return i.estado === 'lista'; }).length,
+                 pe: l.filter(function (i) { return i.estado === 'pendiente'; }).length };
+    }
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function iso(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+    function ultDia(y, m) { return new Date(y, m, 0).getDate(); }
+    function fmt(f) { return formatearFechaMostrar(f); }
+    function plural(n, s, p) { return n + ' ' + (n === 1 ? s : p); }
+    function fh(ms) { return fechaHoraCorta(new Date(ms).toISOString()); }
+
+    /* ---------- período ---------- */
+    function parsePeriodo(nq) {
+        var hoy = getFechaLocal(), y = +hoy.slice(0, 4), m, resto = nq;
+        function cut(re) { resto = resto.replace(re, ' '); }
+        function mes(yy, mo) { var p = yy + '-' + pad(mo); return { desde: p + '-01', hasta: p + '-' + pad(ultDia(yy, mo)), label: nombreMes(p), mes: p }; }
+
+        // fechas sueltas dd/mm[/aaaa] o aaaa-mm-dd
+        var fechas = [], re = /(?:(\d{4})-(\d{2})-(\d{2}))|(?:\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b)/g, f;
+        while ((f = re.exec(nq))) {
+            var yy, mo, dd;
+            if (f[1]) { yy = +f[1]; mo = +f[2]; dd = +f[3]; }
+            else { dd = +f[4]; mo = +f[5]; yy = f[6] ? (+f[6] < 100 ? 2000 + +f[6] : +f[6]) : y; }
+            if (mo >= 1 && mo <= 12 && dd >= 1 && dd <= 31) fechas.push(yy + '-' + pad(mo) + '-' + pad(dd));
+        }
+        if (fechas.length) {
+            fechas.sort(); cut(re);
+            var a = fechas[0], b = fechas[fechas.length - 1];
+            return { desde: a, hasta: b, label: a === b ? 'el ' + fmt(a) : 'del ' + fmt(a) + ' al ' + fmt(b), resto: resto, explicito: true };
+        }
+        if ((m = /\bhoy\b/.exec(nq))) { cut(/\bhoy\b/); return { desde: hoy, hasta: hoy, label: 'hoy (' + fmt(hoy) + ')', resto: resto, explicito: true }; }
+        if (/\bayer\b/.test(nq)) { var ay = new Date(); ay.setDate(ay.getDate() - 1); cut(/\bayer\b/); return { desde: iso(ay), hasta: iso(ay), label: 'ayer (' + fmt(iso(ay)) + ')', resto: resto, explicito: true }; }
+        if (/semana (pasada|anterior)/.test(nq)) {
+            var l0 = parseISO(lunesDe(hoy)); l0.setDate(l0.getDate() - 7); var l1 = new Date(l0); l1.setDate(l1.getDate() + 6);
+            cut(/semana (pasada|anterior)/); return { desde: iso(l0), hasta: iso(l1), label: 'la semana pasada', resto: resto, explicito: true };
+        }
+        if (/(esta semana|semana actual|ultima semana)/.test(nq)) { cut(/(esta semana|semana actual|ultima semana)/); return { desde: lunesDe(hoy), hasta: hoy, label: 'esta semana', resto: resto, explicito: true }; }
+        if ((m = /ultim[oa]s?\s+(\d+)\s+(dias?|semanas?|meses|mes)/.exec(nq))) {
+            var n = +m[1], u = m[2][0], dt = new Date();
+            if (u === 'd') dt.setDate(dt.getDate() - n + 1); else if (u === 's') dt.setDate(dt.getDate() - n * 7 + 1); else dt.setMonth(dt.getMonth() - n);
+            cut(/ultim[oa]s?\s+\d+\s+(dias?|semanas?|meses|mes)/);
+            return { desde: iso(dt), hasta: hoy, label: 'los últimos ' + m[1] + ' ' + (u === 'd' ? 'días' : u === 's' ? 'semanas' : 'meses'), resto: resto, explicito: true };
+        }
+        if (/(mes pasado|mes anterior|ultimo mes)/.test(nq)) {
+            var pm = mesAnterior(mesActual()).split('-'); cut(/(mes pasado|mes anterior|ultimo mes)/);
+            var p = mes(+pm[0], +pm[1]); p.resto = resto; p.explicito = true; return p;
+        }
+        if (/(este mes|mes actual|del mes|mensual)/.test(nq)) {
+            var cm = mesActual().split('-'); cut(/(este mes|mes actual|del mes|mensual)/);
+            var q = mes(+cm[0], +cm[1]); q.resto = resto; q.explicito = true; return q;
+        }
+        // mes con preposición ("en mayo", "de julio de 2026") — o mes suelto, que se valida luego contra nombres de personas
+        var rp = new RegExp('\\b(?:de|en|del|durante|mes de|mes|para|desde|hasta|el)\\s+' + MES_RE + '(?:\\s+(?:de|del)?\\s*(20\\d\\d))?\\b');
+        var rs = new RegExp('\\b' + MES_RE + '(?:\\s+(?:de|del)?\\s*(20\\d\\d))?\\b');
+        var mm = rp.exec(nq), suelto = false;
+        if (!mm) { mm = rs.exec(nq); suelto = !!mm; }
+        if (mm) {
+            var idx = MES_N.indexOf(mm[1] === 'setiembre' ? 'septiembre' : mm[1]) + 1, yr = mm[2] ? +mm[2] : y;
+            if (!mm[2] && idx > +hoy.slice(5, 7)) yr = y - 1;   // mes futuro sin año → se asume el del año pasado
+            var pr = mes(yr, idx); pr.resto = suelto ? nq : nq.replace(mm[0], ' '); pr.explicito = true; pr.suelto = suelto; pr.token = mm[1];
+            return pr;
+        }
+        if ((m = /\b(este ano|ano actual|en el ano)\b/.exec(nq))) { cut(/\b(este ano|ano actual|en el ano)\b/); return { desde: y + '-01-01', hasta: y + '-12-31', label: 'el año ' + y, resto: resto, explicito: true }; }
+        if ((m = /\b(20\d\d)\b/.exec(nq))) { cut(/\b20\d\d\b/); return { desde: m[1] + '-01-01', hasta: m[1] + '-12-31', label: 'el año ' + m[1], resto: resto, explicito: true }; }
+        return { resto: resto, explicito: false };
+    }
+
+    /* ---------- reconocimiento de nombres ---------- */
+    function matchNombre(nombres, tokens, nq) {
+        var res = [];
+        nombres.forEach(function (nom) {
+            var nn = N(nom);
+            if (nn.length >= 3 && (' ' + nq + ' ').indexOf(' ' + nn + ' ') >= 0) { res.push({ nom: nom, score: 100 }); return; }
+            var partes = nn.split(/\s+/).filter(function (p) { return p.length >= 3 && !STOP.has(p); }), sc = 0;
+            partes.forEach(function (p) { if (tokens.some(function (t) { return t === p || (t.length >= 4 && p.indexOf(t) === 0); })) sc++; });
+            if (sc) res.push({ nom: nom, score: sc });
+        });
+        if (!res.length) return { uno: null, varios: [] };
+        var top = Math.max.apply(null, res.map(function (r) { return r.score; }));
+        var c = res.filter(function (r) { return r.score === top; }).map(function (r) { return r.nom; });
+        return c.length === 1 ? { uno: c[0], varios: [] } : { uno: null, varios: c };
+    }
+    function matchTipo(nq, tokens) {
+        var m = /\btipo\s*(?:n[o°º]?\.?\s*)?(\d{1,3})\b/.exec(nq);
+        if (m) {
+            var nombre = ordenarPorNombre(tipos)[+m[1] - 1];
+            if (nombre) return nombre.nombre;
+        }
+        var cand = null, mejor = 0;
+        tipos.forEach(function (t) {
+            var nn = N(t.nombre);
+            if (nn.length >= 4 && (' ' + nq + ' ').indexOf(' ' + nn + ' ') >= 0 && nn.length > mejor) { cand = t.nombre; mejor = nn.length + 100; return; }
+            var partes = nn.split(/\s+/).filter(function (p) { return p.length >= 4 && !STOP.has(p); });
+            if (partes.length >= 2 && partes.every(function (p) { return tokens.indexOf(p) >= 0; }) && partes.join('').length > mejor) { cand = t.nombre; mejor = partes.join('').length; }
+        });
+        return cand;
+    }
+
+    /* ---------- piezas de respuesta ---------- */
+    function kpis(r, extra) {
+        return '<div class="aiq-kpis"><span class="aiq-kpi">' + r.t + ' total</span><span class="aiq-kpi g">' + r.d + ' directas</span><span class="aiq-kpi y">' + r.i + ' indirectas</span>' +
+            '<span class="aiq-kpi">' + r.li + ' listas</span><span class="aiq-kpi ' + (r.pe ? 'r' : '') + '">' + r.pe + ' pendientes</span>' + (extra || '') + '</div>';
+    }
+    var EXP = null;   // datos completos de la respuesta actual (para Excel / PDF)
+    function plain(h) { var d = document.createElement('div'); d.innerHTML = String(h == null ? '' : h); return d.textContent.replace(/\s+/g, ' ').trim(); }
+    function reg(nombre, cab, filas) { if (EXP) EXP.tablas.push({ nombre: nombre, cab: cab, filas: filas }); }
+    function tabla(cab, filas, nums, todas, nombre) {
+        nums = nums || [];
+        if (EXP) reg(nombre || (EXP.tablas.length ? 'Datos ' + (EXP.tablas.length + 1) : 'Datos'), cab, (todas || filas).map(function (f) { return f.map(plain); }));
+        return '<div class="aiq-tw"><table><tr>' + cab.map(function (c, k) { return '<th class="' + (nums.indexOf(k) >= 0 ? 'n' : '') + '">' + E(c) + '</th>'; }).join('') + '</tr>' +
+            filas.map(function (f) { return '<tr>' + f.map(function (c, k) { return '<td class="' + (nums.indexOf(k) >= 0 ? 'n' : '') + '">' + c + '</td>'; }).join('') + '</tr>'; }).join('') + '</table></div>';
+    }
+    function chips(qs) { return '<div class="aiq-chips">' + qs.map(function (q) { return '<button class="aiq-chip" data-q="' + E(q) + '">' + E(q) + '</button>'; }).join('') + '</div>'; }
+    function titulo(t) { if (EXP && !EXP.titulo) EXP.titulo = plain(t); return '<div class="aiq-t">' + t + '</div>'; }
+    function nota(t) { return '<div class="aiq-note">' + t + '</div>'; }
+    function cobertura() {
+        return historialCargado ? '' : nota('Datos cargados desde el ' + fmt(fechaCorte()) + '. Para periodos anteriores, pregunta por un mes o fecha concreta y cargo el historial.');
+    }
+    function descFiltros(f) {
+        var p = [];
+        if (f.parametro) p.push(f.parametro === 'directa' ? 'directas' : 'indirectas');
+        if (f.estado) p.push(f.estado === 'lista' ? 'listas' : 'pendientes');
+        var s = p.join(' y ');
+        if (f.joven) s += ' de <b>' + E(f.joven) + '</b>';
+        if (f.interventor) s += ' hechas por <b>' + E(f.interventor) + '</b>';
+        if (f.tipo) s += ' de tipo <b>' + E(f.tipo) + '</b>';
+        return s;
+    }
+    function estadoTexto(e) {
+        return { ok: '✅ Cumple', egreso: '🎓 Egresado', flex: '🟡 Flexibilizado', incumple: '🚨 Incumple', riesgo: '⚠️ En riesgo', curso: '⏱ En curso' }[e.tipo] || '';
+    }
+    function plazoTxt(i) {
+        var p = estadoPlazo(i);
+        if (p.tipo === 'corriendo') return '⏱ vence ' + fh(p.lim) + ' <small>(' + formatoCuenta(p.resto) + ')</small>';
+        if (p.tipo === 'vencido') return '⛔ venció ' + fh(p.lim);
+        if (p.tipo === 'fuera') return '⛔ registrada fuera de plazo';
+        if (p.tipo === 'a-tiempo') return '✔ en plazo';
+        return '—';
+    }
+
+    /* ---------- intenciones ---------- */
+    function iAyuda() {
+        return titulo('⚡ Puedo responder con los datos del programa') +
+            '<p>Pregúntame en lenguaje normal, por ejemplo:</p>' +
+            chips(['¿cuántas intervenciones directas hay este mes?', '¿cuántos jóvenes hay vigentes?', 'intervenciones de la semana pasada', 'flexibilizados este mes', '¿qué tipos de intervención hay?', 'lista de intervenciones de hoy', 'próximos feriados']) +
+            nota('Para ver todo lo que ha tenido un joven o un interventor desde siempre, escribe "historial completo de [nombre]" (carga el historial antiguo una sola vez). Cada respuesta con datos trae botones para exportar a Excel o PDF. Entiendo: jóvenes, interventores ("intervenciones por interventor", "cuántas hizo María"), tipos (por nombre o "tipo 5"), directas/indirectas, pendientes/listas, plazos, cumplimiento, flexibilizaciones y períodos (hoy, esta semana, mes pasado, mayo, del 01/10 al 15/10, últimos 30 días).');
+    }
+
+    function baseIntervenciones(f) {
+        var todas = f.joven ? intervenciones.slice() : intervenciones.filter(cuentaEnPanel);
+        return { base: todas, excl: f.joven ? 0 : intervenciones.length - todas.length };
+    }
+    function filtrar(base, f) {
+        return base.filter(function (i) {
+            return (!f.desde || i.fecha >= f.desde) && (!f.hasta || i.fecha <= f.hasta) && (!f.joven || i.joven === f.joven) &&
+                (!f.interventor || ints(i).indexOf(f.interventor) >= 0) && (!f.tipo || i.tipo === f.tipo) &&
+                (!f.parametro || i.parametro === f.parametro) && (!f.estado || i.estado === f.estado);
+        });
+    }
+
+    function filaDetalle(i) {
+        return [fmt(i.fecha), i.joven, i.tipo, i.parametro === 'directa' ? 'Directa' : 'Indirecta', ints(i).join(', '), i.estado === 'lista' ? 'Lista' : 'Pendiente', plain(plazoTxt(i))];
+    }
+    var CAB_DETALLE = ['Fecha', 'Joven', 'Tipo', 'Parámetro', 'Interventores', 'Estado', 'Plazo'];
+    function iConteo(f) {
+        var b = baseIntervenciones(f), l = filtrar(b.base, f), r = resumen(l);
+        var h = titulo('📊 ' + plural(r.t, 'intervención', 'intervenciones') + ' ' + descFiltros(f) + ' <span style="font-weight:400">· ' + E(f.label) + '</span>') + kpis(r);
+        if (f.joven && f.mes) {
+            var e = estadoCumplimiento(f.mes, f.joven, resumen(filtrar(b.base, { joven: f.joven, desde: f.desde, hasta: f.hasta })).t);
+            h += '<p>' + estadoTexto(e) + ' · meta mensual: ' + META_MENSUAL + (r.t < META_MENSUAL && e.tipo !== 'egreso' ? ' (faltan ' + (META_MENSUAL - r.t) + ')' : '') + '</p>';
+        }
+        if (f.interventor && !f.joven && l.length) {
+            var porJ = {}, porT = {};
+            l.forEach(function (i) { (porJ[i.joven] = porJ[i.joven] || []).push(i); porT[i.tipo] = (porT[i.tipo] || 0) + 1; });
+            var jf = Object.keys(porJ).map(function (k) { var x = resumen(porJ[k]); return [E(k), x.t, x.d, x.i]; }).sort(function (a, c) { return c[1] - a[1] || a[0].localeCompare(c[0], 'es'); });
+            h += '<p style="margin:8px 0 2px"><b>Jóvenes atendidos (' + jf.length + ')</b></p>' + tabla(['Joven', 'Total', 'Dir.', 'Ind.'], jf.slice(0, 8), [1, 2, 3], jf, 'Jóvenes atendidos');
+            if (jf.length > 8) h += nota('Mostrando 8 de ' + jf.length + ' (el Excel/PDF trae todos).');
+            var tf = Object.keys(porT).map(function (k) { return [E(k), porT[k]]; }).sort(function (a, c) { return c[1] - a[1]; });
+            h += '<p style="margin:8px 0 2px"><b>Por tipo</b></p>' + tabla(['Tipo', 'Cantidad'], tf.slice(0, 6), [1], tf, 'Por tipo');
+        }
+        if (l.length) reg('Detalle', CAB_DETALLE, l.slice().sort(function (a, c) { return (c.fecha || '').localeCompare(a.fecha || ''); }).map(filaDetalle));
+        if (f.interventor && !f.joven) h += chips(['historial completo de ' + f.interventor]);
+        if (b.excl && !f.joven) h += nota('No incluye archivadas ni de jóvenes egresados cuyo mes de egreso ya terminó (igual que el panel).');
+        return h + cobertura();
+    }
+
+    function iLista(f) {
+        var b = baseIntervenciones(f), l = filtrar(b.base, f).sort(function (a, c) { return (c.fecha || '').localeCompare(a.fecha || '') || (c.fechaRegistro || '').localeCompare(a.fechaRegistro || ''); });
+        if (!l.length) return titulo('🔍 Sin resultados') + '<p>No encontré intervenciones ' + descFiltros(f) + ' en ' + E(f.label) + '.</p>' + cobertura();
+        var lim = 15, todas = l.map(function (i) {
+            return [fmt(i.fecha), E(i.joven), E(i.tipo) + ' <small>(' + (i.parametro === 'directa' ? 'dir.' : 'ind.') + ')</small>', ints(i).map(E).join(', '), i.estado === 'lista' ? '✔ Lista' : '⏳ Pendiente'];
+        });
+        return titulo('📋 ' + plural(l.length, 'intervención', 'intervenciones') + ' ' + descFiltros(f) + ' <span style="font-weight:400">· ' + E(f.label) + '</span>') +
+            tabla(['Fecha', 'Joven', 'Tipo', 'Interventores', 'Estado'], todas.slice(0, lim), [], todas) + (l.length > lim ? nota('Mostrando las ' + lim + ' más recientes de ' + l.length + ' (el Excel/PDF trae todas).') : '') + cobertura();
+    }
+
+    function iRanking(f, q, nq) {
+        var asc = /\b(menos|menor|minimo|bajo|peor)\b/.test(nq), top = 10, mt = /\b(?:top|primeros|ultimos|los)\s*(\d{1,2})\b/.exec(nq);
+        if (mt) top = Math.max(1, Math.min(30, +mt[1]));
+        var ent = /interventor|educador|profesional/.test(nq) ? 'interventor' : /\btipos?\b/.test(nq) ? 'tipo' : 'joven';
+        var b = baseIntervenciones(f), l = filtrar(b.base, f), g = {};
+        function add(k, i) { (g[k] = g[k] || []).push(i); }
+        if (ent === 'joven') { jovenesVigentes().filter(function (j) { return !j.sinContacto; }).forEach(function (j) { g[j.nombre] = []; }); l.forEach(function (i) { if (!asc || g[i.joven]) add(i.joven, i); }); }
+        else if (ent === 'interventor') { interventores.forEach(function (x) { g[x.nombre] = []; }); l.forEach(function (i) { ints(i).forEach(function (n) { add(n, i); }); }); }
+        else { tipos.forEach(function (t) { g[t.nombre] = []; }); l.forEach(function (i) { add(i.tipo, i); }); }
+        var arr = Object.keys(g).map(function (k) { return { k: k, r: resumen(g[k]) }; });
+        arr.sort(function (a, c) { return (asc ? a.r.t - c.r.t : c.r.t - a.r.t) || a.k.localeCompare(c.k, 'es'); });
+        var tot = arr.length;
+        var todas = arr.map(function (x, k) { return [k + 1, E(ent === 'tipo' ? etiquetaTipo({ nombre: x.k }) : x.k), x.r.t, x.r.d, x.r.i]; }), filas = todas.slice(0, top);
+        return titulo('🏆 ' + (asc ? 'Con menos' : 'Con más') + ' intervenciones · ' + (ent === 'joven' ? 'jóvenes' : ent === 'tipo' ? 'tipos' : 'interventores') + ' <span style="font-weight:400">· ' + E(f.label) + '</span>') +
+            tabla(['#', 'Nombre', 'Total', 'Dir.', 'Ind.'], filas, [0, 2, 3, 4], todas) + (tot > top ? nota('Mostrando ' + top + ' de ' + tot + '. Di "top 20" para ver más.') : '') + cobertura();
+    }
+
+    function mesesEntre(a, b) {
+        var r = [], y = +a.slice(0, 4), m = +a.slice(5, 7), yb = +b.slice(0, 4), mb = +b.slice(5, 7);
+        while (y < yb || (y === yb && m <= mb)) { r.push(y + '-' + pad(m)); m++; if (m > 12) { m = 1; y++; } }
+        return r;
+    }
+    function agrupar(l, clave) {
+        var g = {}; l.forEach(function (i) { var ks = clave(i); (Array.isArray(ks) ? ks : [ks]).forEach(function (k) { (g[k] = g[k] || []).push(i); }); });
+        return g;
+    }
+    // Historial completo de un joven, de un interventor o de todo el programa (todos los meses, tipos, personas y cada intervención)
+    function iHistorico(f, ent) {
+        var nom = ent === 'joven' ? f.joven : ent === 'interventor' ? f.interventor : '';
+        var l = filtrar(intervenciones.slice(), { joven: f.joven, interventor: f.interventor, tipo: f.tipo, parametro: f.parametro, estado: f.estado, desde: f.explicito ? f.desde : '', hasta: f.explicito ? f.hasta : '' })
+            .sort(function (a, c) { return (a.fecha || '').localeCompare(c.fecha || ''); });
+        var quien = nom ? '<b>' + E(nom) + '</b>' : 'todo el programa';
+        if (!l.length) return titulo('🗂 Historial completo · ' + quien) + '<p>No encontré intervenciones registradas ' + descFiltros({ tipo: f.tipo, parametro: f.parametro, estado: f.estado }) + (f.explicito ? ' en ' + E(f.label) : '') + '.</p>' + cobertura();
+        var primera = l[0].fecha, ultima = l[l.length - 1].fecha, r = resumen(l), pm = agrupar(l, function (i) { return (i.fecha || '').slice(0, 7); });
+        var activos = Object.keys(pm).length, jv = ent === 'joven' ? getJoven(nom) : null, fin = ultima.slice(0, 7);
+        if (ent === 'joven' && jv && !jv.archivado) fin = fin < mesActual() ? mesActual() : fin;
+        var h = titulo('🗂 Historial completo · ' + quien + ' <span style="font-weight:400">· ' + E(f.label) + '</span>');
+        if (jv) h += '<p>' + (jv.archivado ? '🎓 Egresado' + (jv.egresoEn ? ' el ' + fmt(jv.egresoEn) : '') : jv.sinContacto ? '📵 Ingreso sin contacto' : '✅ Vigente') + '</p>';
+        h += kpis(r, '<span class="aiq-kpi">' + fmt(primera) + ' → ' + fmt(ultima) + '</span><span class="aiq-kpi">' + plural(activos, 'mes con actividad', 'meses con actividad') + '</span>');
+
+        // por mes
+        var ini = primera.slice(0, 7);
+        if (f.explicito) { if (f.desde && f.desde.slice(0, 7) > ini) ini = f.desde.slice(0, 7); if (f.hasta && f.hasta.slice(0, 7) < fin) fin = f.hasta.slice(0, 7); }
+        var meses = mesesEntre(ini, fin).reverse(), cabM = ['Mes', 'Total', 'Dir.', 'Ind.'], nM = [1, 2, 3];
+        var filasM = meses.map(function (m) {
+            var x = resumen(pm[m] || []), fila = [nombreMes(m), x.t, x.d, x.i];
+            if (ent === 'joven') { var est = ''; try { est = estadoTexto(estadoCumplimiento(m, nom, x.t)); } catch (e) { } fila.push(est); }
+            else fila.push(new Set((pm[m] || []).map(function (i) { return i.joven; })).size);
+            return fila;
+        });
+        cabM.push(ent === 'joven' ? 'Cumplimiento' : 'Jóvenes'); if (ent !== 'joven') nM.push(4);
+        h += '<p style="margin:10px 0 2px"><b>Mes a mes</b></p>' + tabla(cabM, filasM.slice(0, 12), nM, filasM, 'Por mes') + (filasM.length > 12 ? nota('Mostrando los últimos 12 de ' + filasM.length + ' meses (el Excel/PDF trae todos).') : '');
+
+        // flexibilizaciones del joven
+        if (ent === 'joven') {
+            var fx = flexibilizaciones.filter(function (x) { return x.joven === nom; }).sort(function (a, c) { return (c.mes || '').localeCompare(a.mes || ''); });
+            if (fx.length) h += '<p style="margin:10px 0 2px"><b>Flexibilizaciones (' + fx.length + ')</b></p>' + tabla(['Mes', 'Motivo'], fx.map(function (x) { return [x.mes ? nombreMes(x.mes) : '', E(x.motivo)]; }), [], null, 'Flexibilizaciones');
+        }
+
+        // por tipo
+        var pt = agrupar(l, function (i) { return i.tipo; }), filasT = Object.keys(pt).map(function (k) { return [E(k), pt[k][0].parametro === 'directa' ? 'Directa' : 'Indirecta', pt[k].length]; }).sort(function (a, c) { return c[2] - a[2]; });
+        h += '<p style="margin:10px 0 2px"><b>Por tipo</b></p>' + tabla(['Tipo', 'Parámetro', 'Cantidad'], filasT.slice(0, 8), [2], filasT, 'Por tipo');
+
+        // por la otra parte: interventores (si es joven) / jóvenes (si es interventor) / ambos (global)
+        if (ent !== 'interventor') {
+            var pi = agrupar(l, function (i) { return ints(i); }), fi = Object.keys(pi).map(function (k) { var x = resumen(pi[k]); return [E(k), x.t, x.d, x.i]; }).sort(function (a, c) { return c[1] - a[1]; });
+            h += '<p style="margin:10px 0 2px"><b>Interventores' + (ent === 'joven' ? ' que lo atendieron' : '') + ' (' + fi.length + ')</b></p>' + tabla(['Interventor', 'Total', 'Dir.', 'Ind.'], fi.slice(0, 8), [1, 2, 3], fi, 'Por interventor');
+        }
+        if (ent !== 'joven') {
+            var pj = agrupar(l, function (i) { return i.joven; }), fj = Object.keys(pj).map(function (k) { var x = resumen(pj[k]); return [E(k), x.t, x.d, x.i]; }).sort(function (a, c) { return c[1] - a[1]; });
+            h += '<p style="margin:10px 0 2px"><b>Jóvenes atendidos (' + fj.length + ')</b></p>' + tabla(['Joven', 'Total', 'Dir.', 'Ind.'], fj.slice(0, 8), [1, 2, 3], fj, 'Por joven');
+        }
+
+        // detalle completo: se ven las 10 más recientes; el archivo trae todas con fecha de registro y plazo
+        var desc = l.slice().reverse(), vis = desc.map(function (i) { return [fmt(i.fecha), E(i.joven), E(i.tipo) + ' <small>(' + (i.parametro === 'directa' ? 'dir.' : 'ind.') + ')</small>', ints(i).map(E).join(', '), i.estado === 'lista' ? '✔ Lista' : '⏳ Pendiente']; });
+        h += '<p style="margin:10px 0 2px"><b>Detalle de intervenciones (' + l.length + ')</b></p>' + tabla(['Fecha', 'Joven', 'Tipo', 'Interventores', 'Estado'], vis.slice(0, 10), [], null, 'Detalle completo');
+        if (EXP) { var ult = EXP.tablas[EXP.tablas.length - 1]; ult.cab = CAB_DETALLE; ult.filas = desc.map(filaDetalle); }
+        if (l.length > 10) h += nota('Mostrando las 10 más recientes de ' + l.length + ' (el Excel/PDF trae todas, con fecha de registro y plazo).');
+        return h + cobertura();
+    }
+
+    function iPorInterventor(f, per) {
+        var b = baseIntervenciones(f), l = filtrar(b.base, f), g = {};
+        interventores.forEach(function (x) { g[x.nombre] = []; });
+        l.forEach(function (i) { ints(i).forEach(function (n) { (g[n] = g[n] || []).push(i); }); });
+        var arr = Object.keys(g).map(function (k) { var r = resumen(g[k]); return { k: k, r: r, jov: new Set(g[k].map(function (i) { return i.joven; })).size }; })
+            .sort(function (a, c) { return c.r.t - a.r.t || a.k.localeCompare(c.k, 'es'); });
+        var filas = arr.map(function (x) { return [E(x.k), x.r.t, x.r.d, x.r.i, x.r.li, x.r.pe, x.jov]; });
+        var sufijo = per && per.explicito ? ' ' + per.label : '';
+        var h = titulo('👥 Intervenciones por interventor <span style="font-weight:400">· ' + E(f.label) + '</span>') + kpis(resumen(l)) +
+            tabla(['Interventor', 'Total', 'Dir.', 'Ind.', 'Listas', 'Pend.', 'Jóvenes'], filas, [1, 2, 3, 4, 5, 6]) +
+            nota('Si una intervención tiene varios interventores, cuenta para cada uno; por eso la suma puede superar el total.');
+        reg('Detalle', ['Interventor'].concat(CAB_DETALLE), [].concat.apply([], arr.map(function (x) { return g[x.k].slice().sort(function (a, c) { return (c.fecha || '').localeCompare(a.fecha || ''); }).map(function (i) { return [x.k].concat(filaDetalle(i)); }); })));
+        var top = arr.filter(function (x) { return x.r.t > 0; }).slice(0, 4).map(function (x) { return 'intervenciones de ' + x.k + sufijo; });
+        return h + (top.length ? chips(top) : '') + cobertura();
+    }
+
+    function iCumplimiento(f) {
+        var m = f.mes || mesActual(), res = resumenMes(m);
+        if (f.joven) {
+            var r = res.filter(function (x) { return x.nombre === f.joven; })[0];
+            if (!r) return titulo('ℹ️ Sin datos') + '<p><b>' + E(f.joven) + '</b> no se evalúa en ' + nombreMes(m) + ' (sin contacto o aún no ingresaba).</p>';
+            var fx = r.tipo === 'flex' ? '<p>Motivo: ' + E(r.flex.motivo) + '</p>' : '';
+            return titulo('🚨 ' + E(f.joven) + ' · ' + nombreMes(m)) + '<p>' + estadoTexto(r) + ' — ' + r.total + '/' + META_MENSUAL + ' <small>(' + r.directas + ' dir. / ' + r.indirectas + ' ind.)</small></p>' + fx;
+        }
+        var mal = res.filter(function (r) { return r.tipo === 'incumple' || r.tipo === 'riesgo' || r.tipo === 'curso'; }).sort(function (a, c) { return a.total - c.total || a.nombre.localeCompare(c.nombre, 'es'); });
+        var ok = res.filter(function (r) { return r.tipo === 'ok'; }).length, fl = res.filter(function (r) { return r.tipo === 'flex'; }), d = diasRestantesMes(m);
+        var cierra = m === mesActual() ? ' · ' + (d === 0 ? 'el mes termina hoy' : plural(d, 'día restante', 'días restantes')) : '';
+        var h = titulo('🚨 Cumplimiento ' + nombreMes(m) + cierra) +
+            '<div class="aiq-kpis"><span class="aiq-kpi g">' + ok + ' cumplen</span><span class="aiq-kpi ' + (mal.length ? 'r' : '') + '">' + mal.length + ' bajo la meta</span><span class="aiq-kpi y">' + fl.length + ' flexibilizados</span></div>';
+        if (mal.length) h += tabla(['Joven', 'Avance', 'Faltan', 'Estado'], mal.map(function (r) { return [E(r.nombre), r.total + '/' + META_MENSUAL + ' <small>(' + r.directas + ' d / ' + r.indirectas + ' i)</small>', Math.max(0, META_MENSUAL - r.total), estadoTexto(r)]; }), [2]);
+        else h += '<p>✅ Todos los jóvenes evaluados cumplen la meta.</p>';
+        if (fl.length) h += '<p style="margin-top:8px"><b>Flexibilizados:</b> ' + fl.map(function (r) { return E(r.nombre) + ' <small>(' + E(r.flex.motivo) + ')</small>'; }).join(' · ') + '</p>';
+        return h + cobertura();
+    }
+
+    function iFlex(f) {
+        var m = f.mes, l = flexibilizaciones.filter(function (x) { return !m || x.mes === m; }).sort(function (a, c) { return (c.mes || '').localeCompare(a.mes || '') || (a.joven || '').localeCompare(c.joven || '', 'es'); });
+        if (f.joven) l = l.filter(function (x) { return x.joven === f.joven; });
+        if (!l.length) return titulo('🟡 Flexibilizaciones') + '<p>No hay flexibilizaciones ' + (f.joven ? 'de <b>' + E(f.joven) + '</b> ' : '') + (m ? 'en ' + nombreMes(m) : 'registradas') + '.</p>';
+        return titulo('🟡 Flexibilizaciones' + (m ? ' · ' + nombreMes(m) : '')) + tabla(['Mes', 'Joven', 'Motivo'], l.map(function (x) { return [x.mes ? nombreMes(x.mes) : '', E(x.joven), E(x.motivo)]; }));
+    }
+
+    function iPlazos(f, nq) {
+        var b = baseIntervenciones(f), l = filtrar(b.base, { joven: f.joven, interventor: f.interventor, tipo: f.tipo, parametro: f.parametro, desde: f.explicito ? f.desde : '', hasta: f.explicito ? f.hasta : '' });
+        var pend = l.filter(function (i) { return i.estado === 'pendiente'; }), fuera = l.filter(function (i) { return estadoPlazo(i).tipo === 'fuera'; });
+        var venc = pend.filter(function (i) { return estadoPlazo(i).tipo === 'vencido'; });
+        var corr = pend.filter(function (i) { return estadoPlazo(i).tipo === 'corriendo'; });
+        var urg = corr.filter(function (i) { return estadoPlazo(i).resto <= 24 * 3600 * 1000; });
+        var sinPlazo = pend.length - venc.length - corr.length;
+        var soloVenc = /vencid|fuera de plazo|atrasad|retrasad/.test(nq), soloUrg = /urgent|por vencer|ultimo dia|proxim/.test(nq);
+        var lista = soloVenc ? venc.concat(/fuera de plazo/.test(nq) ? fuera : []) : soloUrg ? urg : pend;
+        lista = lista.slice().sort(function (a, c) {
+            var pa = estadoPlazo(a), pc = estadoPlazo(c), ra = pa.tipo === 'corriendo' ? pa.resto : -1e15 + (pa.lim || 0), rc = pc.tipo === 'corriendo' ? pc.resto : -1e15 + (pc.lim || 0);
+            return ra - rc;
+        });
+        var h = titulo('⏱ ' + (soloVenc ? 'Fuera de plazo' : soloUrg ? 'Por vencer (menos de 24 h)' : 'Pendientes') + ' ' + descFiltros({ joven: f.joven, interventor: f.interventor, tipo: f.tipo, parametro: f.parametro })) +
+            '<div class="aiq-kpis"><span class="aiq-kpi">' + pend.length + ' pendientes</span><span class="aiq-kpi r">' + venc.length + ' vencidas</span><span class="aiq-kpi y">' + urg.length + ' urgentes (&lt;24 h)</span><span class="aiq-kpi g">' + (corr.length - urg.length) + ' en plazo</span>' +
+            (sinPlazo > 0 ? '<span class="aiq-kpi">' + sinPlazo + ' sin plazo</span>' : '') + (fuera.length ? '<span class="aiq-kpi r">' + fuera.length + ' registradas fuera de plazo</span>' : '') + '</div>';
+        if (!lista.length) return h + '<p>' + (soloVenc ? '✅ No hay intervenciones vencidas.' : soloUrg ? '✅ No hay pendientes por vencer en las próximas 24 h.' : '✅ No hay pendientes.') + '</p>';
+        var lim = 12;
+        var todasP = lista.map(function (i) { return [E(i.joven), E(i.tipo), fmt(i.fecha), plazoTxt(i)]; });
+        h += tabla(['Joven', 'Tipo', 'Fecha', 'Plazo'], todasP.slice(0, lim), [], todasP);
+        if (lista.length > lim) h += nota('Mostrando ' + lim + ' de ' + lista.length + ' (las más urgentes primero; el Excel/PDF trae todas).');
+        return h + cobertura();
+    }
+
+    function iJovenes(nq) {
+        var vig = jovenesVigentes(), sc = vig.filter(function (j) { return j.sinContacto; }), eg = jovenes.filter(function (j) { return j.archivado; });
+        if (/egresad/.test(nq) && /(quien|cuales|lista|nombres)/.test(nq))
+            return titulo('🎓 Egresados (' + eg.length + ')') + (eg.length ? tabla(['Joven', 'Egreso'], eg.sort(function (a, c) { return a.nombre.localeCompare(c.nombre, 'es'); }).map(function (j) { return [E(j.nombre), j.egresoEn ? fmt(j.egresoEn) : '—']; })) : '<p>No hay egresados.</p>');
+        if (/sin contacto/.test(nq) && /(quien|cuales|lista|nombres)/.test(nq))
+            return titulo('📵 Ingresos sin contacto (' + sc.length + ')') + (sc.length ? '<p>' + sc.map(function (j) { return E(j.nombre); }).join(' · ') + '</p>' : '<p>No hay ingresos sin contacto.</p>');
+        var act = vig.length - sc.length, mes = mesActual(), at = new Set(intervencionesDelMes(mes).filter(function (i) { return cuentaEnPanel(i); }).map(function (i) { return i.joven; }));
+        var atend = vig.filter(function (j) { return !j.sinContacto && at.has(j.nombre); }).length;
+        return titulo('👥 Jóvenes') + '<div class="aiq-kpis"><span class="aiq-kpi g">' + act + ' vigentes con contacto</span><span class="aiq-kpi y">' + sc.length + ' sin contacto</span><span class="aiq-kpi">' + eg.length + ' egresados</span></div>' +
+            '<p>' + atend + ' de ' + act + ' fueron atendidos en ' + nombreMes(mes) + '.</p>';
+    }
+
+    function iListaEntidades(nq) {
+        if (/interventor|educador|profesional/.test(nq)) return titulo('👥 Interventores (' + interventores.length + ')') + '<p>' + interventores.map(function (x) { return E(x.nombre); }).sort(function (a, c) { return a.localeCompare(c, 'es'); }).join(' · ') + '</p>';
+        return titulo('📌 Tipos (' + tipos.length + ')') + tabla(['#', 'Tipo', 'Parámetro'], ordenarPorNombre(tipos).map(function (t, k) { return [k + 1, E(t.nombre), t.parametro === 'directa' ? 'Directa' : 'Indirecta']; }), [0]);
+    }
+
+    function iFeriados() {
+        var hoy = getFechaLocal(), l = [].concat(Array.from(FERIADOS_CL)).filter(function (x) { return x[0] >= hoy; }).sort(function (a, c) { return a[0].localeCompare(c[0]); }).slice(0, 6);
+        return titulo('📅 Próximos feriados') + (l.length ? tabla(['Fecha', 'Feriado'], l.map(function (x) { return [fmt(x[0]), E(x[1])]; })) : '<p>No hay feriados cargados más adelante.</p>') + nota('Los feriados, sábados y domingos no cuentan como días hábiles del plazo de ' + PLAZO_DIAS_HABILES + ' días.');
+    }
+
+    function iResumenJoven(nombre) {
+        var j = getJoven(nombre), todas = intervenciones.filter(function (i) { return i.joven === nombre; }), r = resumen(todas), m = mesActual();
+        var delMes = todas.filter(function (i) { return (i.fecha || '').slice(0, 7) === m; });
+        var e = estadoCumplimiento(m, nombre, delMes.length), est = j ? (j.archivado ? '🎓 Egresado' : j.sinContacto ? '📵 Sin contacto' : '✅ Vigente') : '';
+        var ult = todas.slice().sort(function (a, c) { return (c.fecha || '').localeCompare(a.fecha || ''); })[0];
+        var pend = todas.filter(function (i) { return i.estado === 'pendiente'; });
+        var h = titulo('👤 ' + E(nombre)) + '<p>' + est + (j && !j.archivado ? ' · ' + nombreMes(m) + ': ' + estadoTexto(e) + ' (' + delMes.length + '/' + META_MENSUAL + ')' : '') + '</p>' + kpis(r);
+        var meses = {}; todas.forEach(function (i) { var k = (i.fecha || '').slice(0, 7); meses[k] = (meses[k] || 0) + 1; });
+        var ks = Object.keys(meses).sort().reverse().slice(0, 4);
+        var ksAll = Object.keys(meses).sort().reverse();
+        if (ks.length) h += tabla(['Mes', 'Intervenciones'], ks.map(function (k) { return [nombreMes(k), meses[k]]; }), [1], ksAll.map(function (k) { return [nombreMes(k), meses[k]]; }));
+        if (todas.length) reg('Detalle', CAB_DETALLE, todas.slice().sort(function (a, c) { return (c.fecha || '').localeCompare(a.fecha || ''); }).map(filaDetalle));
+        if (ult) h += '<p style="margin-top:8px">Última: <b>' + fmt(ult.fecha) + '</b> · ' + E(ult.tipo) + ' · ' + ints(ult).map(E).join(', ') + '</p>';
+        if (pend.length) h += '<p>⏳ ' + plural(pend.length, 'pendiente', 'pendientes') + ': ' + pend.slice(0, 3).map(function (i) { return plazoTxt(i); }).join(' · ') + '</p>';
+        return h + chips(['historial completo de ' + nombre, '¿cumple la meta ' + nombre + '?', 'intervenciones de ' + nombre + ' el mes pasado']) + cobertura();
+    }
+
+    /* ---------- cerebro ---------- */
+    function interpretar(q) {
+        var nq = N(q).replace(/[¿?¡!,;:()"']/g, ' ').replace(/\s+/g, ' ').trim();
+        if (!nq) return { html: iAyuda() };
+        if (/^(ayuda|help|hola|buenas|que (puedes|sabes|haces)|como funcionas|opciones)/.test(nq) && nq.split(' ').length < 6) return { html: iAyuda() };
+
+        var per = parsePeriodo(nq), resto = per.resto;
+        var tokens = resto.split(/[^a-z0-9]+/).filter(function (t) { return t.length >= 3 && !STOP.has(t); });
+        var hintInterv = /(interventor|educador|profesional|realizo|realizaron|hechas por|hizo|hicieron|atendio|atendieron)/.test(nq);
+        var mj = matchNombre(jovenes.map(function (j) { return j.nombre; }), tokens, resto);
+        var mi = matchNombre(interventores.map(function (x) { return x.nombre; }), tokens, resto);
+        var joven = null, interventor = null, ambiguo = [];
+        if (hintInterv && mi.uno) interventor = mi.uno;
+        else if (mj.uno) joven = mj.uno;
+        else if (mi.uno) interventor = mi.uno;
+        else if (hintInterv && mi.varios.length) ambiguo = mi.varios;
+        else if (mj.varios.length) ambiguo = mj.varios;
+        else if (mi.varios.length) ambiguo = mi.varios;
+        // un mes que en realidad es el nombre de una persona ("resumen de Julio"), salvo que diga "mes de julio", "julio 2026" o lo repita
+        if (per.token) {
+            var tk = per.token, hayPersona = jovenes.concat(interventores).some(function (x) { return N(x.nombre).split(' ').indexOf(tk) >= 0; });
+            var veces = nq.split(tk).length - 1, claro = new RegExp('\\bmes (de )?' + tk + '|' + tk + ' (de |del )?20\\d\\d').test(nq);
+            if (hayPersona && veces === 1 && !claro) { per = { resto: nq, explicito: false };
+                tokens = nq.split(/[^a-z0-9]+/).filter(function (t) { return t.length >= 3 && !STOP.has(t); }); resto = nq;
+                mj = matchNombre(jovenes.map(function (j) { return j.nombre; }), tokens, resto); mi = matchNombre(interventores.map(function (x) { return x.nombre; }), tokens, resto);
+                joven = interventor = null; ambiguo = [];
+                if (hintInterv && mi.uno) interventor = mi.uno; else if (mj.uno) joven = mj.uno; else if (mi.uno) interventor = mi.uno; else ambiguo = mj.varios.length ? mj.varios : mi.varios; }
+        }
+        var tipo = matchTipo(resto, tokens);
+        var parametro = /\bindirect/.test(nq) ? 'indirecta' : /\bdirect/.test(nq) ? 'directa' : '';
+        var estado = /\bpendiente/.test(nq) ? 'pendiente' : /\b(listas|registrad[ao]s?|terminad[ao]s?|en estado lista|estado lista)\b/.test(nq) ? 'lista' : '';
+
+        var intent = '';
+        var pideHist = /(historic|historial|toda la historia|desde siempre|trayectoria|completo|completa|todas las intervenciones|lo que ha hecho|lo que han hecho)/.test(nq);
+        if (/\bayuda\b|que puedes/.test(nq)) intent = 'ayuda';
+        else if (pideHist && (joven || interventor || ambiguo.length || /(historic|historial|toda la historia|desde siempre)/.test(nq))) intent = 'historico';
+        else if (/feriado/.test(nq)) intent = 'feriados';
+        else if (/flexibiliz/.test(nq)) intent = 'flex';
+        else if (/(vencid|fuera de plazo|plazo|vence|vencen|urgent|por vencer|atrasad|retrasad)/.test(nq)) intent = 'plazos';
+        else if (estado === 'pendiente' && !/(cuantas?|cuantos|total|cantidad)/.test(nq)) intent = 'plazos';
+        else if (/(cumpl|meta|riesgo|incumpl|bajo la|faltan|falta)/.test(nq)) intent = 'cumple';
+        else if (/\b(cada|por|todos los|todas las)\s+(interventor|educador|profesional)/.test(nq) && !joven) intent = 'porInterventor';
+        else if (/(ranking|\btop\b|quien(es)? (tiene|hizo|hicieron|realizo|lleva|va)|(mas|menos) (intervenciones|atendid)|\b(mas|menos)\b.*(intervenciones|jovenes|interventores|tipos))/.test(nq) && !joven) intent = 'ranking';
+        else if (/(que|cuales)\s+(tipos|interventores)|lista de (tipos|interventores)|(tipos|interventores) (hay|existen|tengo)/.test(nq)) intent = 'entidades';
+        else if (/(cuantos|cuantas)?\s*(jovenes|chicos|adolescentes)\b.*(vigente|egresad|sin contacto|hay|tengo|tenemos|atendid)|egresad|sin contacto|vigentes/.test(nq) && !joven) intent = 'jovenes';
+        else if (/(cuantas?|cuantos|total|cantidad|numero de|suma)/.test(nq)) intent = 'conteo';
+        else if (/(lista|listado|muestra|mostrar|dame|ver|ultimas?|ultimos|detalle|cuales|que intervenciones|historial|registros)/.test(nq)) intent = 'lista';
+        else if (/(resumen|como (va|esta|le va)|situacion|estado de|ficha|perfil)/.test(nq) && joven) intent = 'resumen';
+        else if (joven && !per.explicito && !parametro && !estado && !tipo) intent = 'resumen';
+        else if (interventor || tipo || parametro || estado || per.explicito || joven) intent = 'conteo';
+
+        // seguimiento: "¿y el mes pasado?" / "¿y de Ana?"
+        var seguimiento = !intent || /^y\b/.test(nq);
+        if (seguimiento && ctx.intent && (per.explicito || joven || interventor || tipo || parametro || estado)) {
+            intent = ctx.intent === 'resumen' && !joven ? 'conteo' : ctx.intent;
+            if (!joven && !interventor && !ambiguo.length) { joven = ctx.joven || null; interventor = ctx.interventor || null; }
+            tipo = tipo || ctx.tipo || ''; parametro = parametro || ctx.parametro || ''; estado = estado || ctx.estado || '';
+            if (!per.explicito && ctx.per) per = ctx.per;
+        }
+        if (ambiguo.length && intent !== 'ayuda') {
+            return { html: titulo('¿A quién te refieres?') + chips(ambiguo.slice(0, 8).map(function (n) { return intent === 'historico' ? 'historial completo de ' + n : n; })) };
+        }
+        if (!intent) return { html: titulo('🤔 No logré entender esa pregunta') + '<p>Prueba con algo como:</p>' + chips(['¿cuántas intervenciones hay este mes?', '¿cuántos jóvenes hay vigentes?', '¿qué tipos de intervención hay?', 'ayuda']) };
+
+        // período por defecto
+        var todo = /\b(en total|total|todo|todas|todos|historic|acumulad|desde siempre)\b/.test(nq) && !per.explicito;
+        var f = { joven: joven, interventor: interventor, tipo: tipo, parametro: parametro, estado: estado };
+        if (per.explicito) { f.desde = per.desde; f.hasta = per.hasta; f.label = per.label; f.mes = per.mes; f.explicito = true; }
+        else if (todo || intent === 'plazos' || intent === 'resumen' || intent === 'historico') { f.desde = ''; f.hasta = ''; f.label = 'todo lo cargado'; f.mes = ''; }
+        else { var cm = mesActual(); var p = cm.split('-'); f.desde = cm + '-01'; f.hasta = cm + '-' + pad(ultDia(+p[0], +p[1])); f.label = nombreMes(cm) + ' (mes actual)'; f.mes = cm; }
+        if (intent === 'historico') { f.todoHist = true; if (!per.explicito) f.label = 'todo el historial'; }
+        if (intent === 'cumple' && !f.mes) f.mes = per.explicito && per.mes ? per.mes : mesActual();
+        if (intent === 'flex' && !per.explicito) f.mes = '';
+
+        ctx = { intent: intent, joven: joven, interventor: interventor, tipo: tipo, parametro: parametro, estado: estado, per: per.explicito ? per : null };
+        return { f: f, intent: intent, nq: nq, q: q, joven: joven, per: per };
+    }
+
+    function renderIntent(r) {
+        var f = r.f;
+        EXP = { titulo: '', tablas: [] };
+        switch (r.intent) {
+            case 'ayuda': return iAyuda();
+            case 'feriados': return iFeriados();
+            case 'flex': return iFlex(f);
+            case 'plazos': return iPlazos(f, r.nq);
+            case 'cumple': return iCumplimiento(f);
+            case 'porInterventor': return iPorInterventor(f, r.per);
+            case 'historico': return iHistorico(f, f.joven ? 'joven' : f.interventor ? 'interventor' : null);
+            case 'ranking': return iRanking(f, r.q, r.nq);
+            case 'entidades': return iListaEntidades(r.nq);
+            case 'jovenes': return iJovenes(r.nq);
+            case 'resumen': return iResumenJoven(r.joven);
+            case 'lista': return iLista(f);
+            default: return iConteo(f);
+        }
+    }
+
+    /* ---------- exportar a Excel / PDF ---------- */
+    var botonesExport = '<div class="aiq-exp"><button type="button" data-exp="xlsx">📥 Excel</button><button type="button" data-exp="pdf">📄 PDF</button></div>';
+    function cargarLib(ok, url) {
+        if (ok()) return Promise.resolve();
+        return new Promise(function (res, rej) { var sc = document.createElement('script'); sc.src = url; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc); });
+    }
+    function slug(t) { return N(t).replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'consulta'; }
+    function lat(t) { return String(t == null ? '' : t).replace(/[—–]/g, '-').replace(/…/g, '...').replace(/[^\u0020-\u007E\u00A0-\u00FF]/g, '').replace(/\s+/g, ' ').trim(); }
+    function datosExport(msg) {
+        var e = msg._exp || { titulo: '', tablas: [] };
+        var tit = e.titulo || (msg.querySelector('.aiq-t') || {}).textContent || 'Consulta';
+        return {
+            titulo: tit, tablas: e.tablas,
+            kpis: [].map.call(msg.querySelectorAll('.aiq-kpi'), function (x) { return x.textContent.trim(); }),
+            notas: [].map.call(msg.querySelectorAll('.aiq-note'), function (x) { return x.textContent.trim(); }),
+            archivo: 'asistente_LAE_' + slug(tit) + '_' + getFechaLocal()
+        };
+    }
+    function numero(v) { return /^-?\d+$/.test(String(v)) ? Number(v) : v; }
+    function nombreHoja(n, usados) {
+        var b = String(n || 'Datos').replace(/[\[\]:*?\/\\]/g, ' ').trim().slice(0, 28) || 'Datos', x = b, k = 2;
+        while (usados.indexOf(x) >= 0) x = b + ' ' + (k++);
+        usados.push(x); return x;
+    }
+    function exportarExcel(d) {
+        var q = function (x) { return '"' + String(x).replace(/"/g, '""') + '"'; };
+        return cargarLib(function () { return window.XLSX; }, 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js').then(function () {
+            var wb = XLSX.utils.book_new(), usados = [];
+            var res = [[d.titulo], ['Generado: ' + fechaHoraCorta(new Date().toISOString())], []];
+            d.kpis.forEach(function (k) { res.push([k]); });
+            if (d.notas.length) { res.push([]); d.notas.forEach(function (n) { res.push([n]); }); }
+            var w0 = XLSX.utils.aoa_to_sheet(res); w0['!cols'] = [{ wch: 70 }];
+            if (d.kpis.length || !d.tablas.length) XLSX.utils.book_append_sheet(wb, w0, nombreHoja('Resumen', usados));
+            d.tablas.forEach(function (t) {
+                var aoa = [t.cab].concat(t.filas.map(function (r) { return r.map(numero); }));
+                var ws = XLSX.utils.aoa_to_sheet(aoa);
+                ws['!cols'] = t.cab.map(function (c, k) { var m = String(c).length; t.filas.forEach(function (r) { m = Math.max(m, String(r[k] == null ? '' : r[k]).length); }); return { wch: Math.min(48, m + 2) }; });
+                ws['!autofilter'] = { ref: ws['!ref'] };
+                XLSX.utils.book_append_sheet(wb, ws, nombreHoja(t.nombre, usados));
+            });
+            XLSX.writeFile(wb, d.archivo + '.xlsx');
+        }).catch(function () {   // sin acceso a la librería: CSV
+            var csv = '';
+            d.tablas.forEach(function (t) { csv += q(t.nombre) + '\n' + t.cab.map(q).join(',') + '\n' + t.filas.map(function (r) { return r.map(q).join(','); }).join('\n') + '\n\n'; });
+            if (!csv) csv = q(d.titulo) + '\n' + d.kpis.map(q).join('\n') + '\n';
+            var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv' })); a.download = d.archivo + '.csv'; a.click();
+        });
+    }
+    function imprimirRespaldo(d) {
+        var h = '<h2>' + E(d.titulo) + '</h2><p>' + E(d.kpis.join('  ·  ')) + '</p>' + d.tablas.map(function (t) {
+            return '<h4>' + E(t.nombre) + '</h4><table><tr>' + t.cab.map(function (c) { return '<th>' + E(c) + '</th>'; }).join('') + '</tr>' + t.filas.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + E(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</table>';
+        }).join('') + d.notas.map(function (n) { return '<p><small>' + E(n) + '</small></p>'; }).join('');
+        var fr = document.createElement('iframe'); fr.style.cssText = 'position:fixed;width:0;height:0;border:0;'; document.body.appendChild(fr);
+        fr.contentDocument.open();
+        fr.contentDocument.write('<html><head><meta charset="utf-8"><title>' + E(d.archivo) + '</title><style>body{font-family:Arial,sans-serif;font-size:12px;padding:16px}table{border-collapse:collapse;width:100%;margin-bottom:12px}th{background:#667eea;color:#fff;text-align:left}td,th{border:1px solid #ccc;padding:4px 6px}</style></head><body>' + h + '</body></html>');
+        fr.contentDocument.close();
+        setTimeout(function () { fr.contentWindow.focus(); fr.contentWindow.print(); setTimeout(function () { fr.remove(); }, 2000); }, 250);
+    }
+    function exportarPDF(d) {
+        var urlJs = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', urlAt = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js';
+        var tieneAT = function () { return window.jspdf && window.jspdf.jsPDF && window.jspdf.jsPDF.API && window.jspdf.jsPDF.API.autoTable; };
+        return cargarLib(function () { return window.jspdf; }, urlJs).then(function () { return cargarLib(tieneAT, urlAt); }).then(function () {
+            var J = window.jspdf.jsPDF, ancho = d.tablas.some(function (t) { return t.cab.length >= 5; });
+            var doc = new J({ orientation: ancho ? 'landscape' : 'portrait', unit: 'pt', format: 'a4' });
+            var W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), y = 44, prog = (document.getElementById('programTitle') || {}).textContent || 'Sistema de Intervenciones';
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(120);
+            doc.text(lat(prog) + '  ·  generado el ' + fechaHoraCorta(new Date().toISOString()), 40, 28);
+            doc.setFontSize(15); doc.setFont('helvetica', 'bold'); doc.setTextColor(70, 80, 170);
+            var tl = doc.splitTextToSize(lat(d.titulo), W - 80); doc.text(tl, 40, y); y += tl.length * 18 + 4;
+            if (d.kpis.length) { doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.setTextColor(50); var kl = doc.splitTextToSize(lat(d.kpis.join('   |   ')), W - 80); doc.text(kl, 40, y); y += kl.length * 13 + 8; }
+            d.tablas.forEach(function (t) {
+                if (y > H - 90) { doc.addPage(); y = 44; }
+                if (d.tablas.length > 1) { doc.setFontSize(11); doc.setFont('helvetica', 'bold'); doc.setTextColor(60); doc.text(lat(t.nombre), 40, y); y += 6; }
+                var opts = { startY: y + 4, head: [t.cab.map(lat)], body: t.filas.map(function (r) { return r.map(lat); }), margin: { left: 40, right: 40 }, styles: { fontSize: 8.5, cellPadding: 4 }, headStyles: { fillColor: [102, 126, 234] }, alternateRowStyles: { fillColor: [245, 246, 252] } };
+                if (typeof doc.autoTable === 'function') doc.autoTable(opts); else window.jspdf.autoTable(doc, opts);
+                y = doc.lastAutoTable.finalY + 18;
+            });
+            if (d.notas.length) { if (y > H - 60) { doc.addPage(); y = 44; } doc.setFontSize(8.5); doc.setFont('helvetica', 'italic'); doc.setTextColor(120); doc.text(doc.splitTextToSize(lat(d.notas.join(' ')), W - 80), 40, y); }
+            var n = doc.getNumberOfPages();
+            for (var p = 1; p <= n; p++) { doc.setPage(p); doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(150); doc.text('Página ' + p + ' de ' + n, W - 40, H - 20, { align: 'right' }); }
+            doc.save(d.archivo + '.pdf');
+        }).catch(function (e) { imprimirRespaldo(d); });
+    }
+    function exportar(btn) {
+        var msg = btn.closest('.aiq-msg'); if (!msg) return;
+        var d = datosExport(msg), tipo = btn.getAttribute('data-exp'), txt = btn.innerHTML;
+        btn.disabled = true;
+        var fin = function () { btn.disabled = false; btn.innerHTML = txt; };
+        (tipo === 'xlsx' ? exportarExcel(d) : exportarPDF(d)).then(fin, fin);
+    }
+
+    /* ---------- interfaz ---------- */
+    var body, input, panel, fab;
+    function addMsg(html, cls) {
+        var d = document.createElement('div'); d.className = 'aiq-msg ' + cls; d.innerHTML = html; body.appendChild(d); body.scrollTop = body.scrollHeight; return d;
+    }
+    function ask(q) {
+        q = String(q || '').trim(); if (!q || busy) return;
+        addMsg(E(q), 'aiq-u'); input.value = '';
+        var t0 = performance.now();
+        try {
+            var r = interpretar(q);
+            if (r.html) { addMsg(r.html + '<div class="aiq-ms">⚡ ' + Math.max(1, Math.round(performance.now() - t0)) + ' ms</div>', 'aiq-b'); return; }
+            // período anterior a lo cargado en vivo: se trae el historial una sola vez
+            var necesita = r.f && !historialCargado && (r.f.todoHist || (r.f.desde && r.f.desde < fechaCorte()));
+            var listo = function () {
+                try { var htm = renderIntent(r), ex = EXP, puede = ex && (ex.tablas.length || /aiq-kpis/.test(htm)); var m = addMsg(htm + (puede ? botonesExport : '') + '<div class="aiq-ms">⚡ ' + Math.max(1, Math.round(performance.now() - t0)) + ' ms</div>', 'aiq-b'); m._exp = ex; }
+                catch (e) { addMsg('Ocurrió un error al armar la respuesta: ' + E(e.message), 'aiq-b'); }
+            };
+            if (necesita) {
+                busy = true; var w = addMsg('⏳ Cargando el historial anterior (solo esta vez)…', 'aiq-b');
+                asegurarHistorial().then(function () { busy = false; w.remove(); r = interpretar(q); if (r.html) addMsg(r.html, 'aiq-b'); else listo(); });
+            } else listo();
+        } catch (e) { addMsg('Ocurrió un error: ' + E(e.message), 'aiq-b'); }
+    }
+
+    function build() {
+        fab = document.createElement('button'); fab.className = 'aiq-fab'; fab.title = 'Asistente Rápido LAE'; fab.setAttribute('aria-label', 'Abrir Asistente Rápido LAE');
+        fab.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg>';
+        panel = document.createElement('div'); panel.className = 'aiq-panel aiq';
+        panel.innerHTML = '<div class="aiq-head"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg><div><b>Asistente Rápido LAE</b><small>Consulta los datos del programa al instante</small></div><span class="aiq-sp"></span><button type="button" data-act="clear">Limpiar</button><button type="button" data-act="close" aria-label="Cerrar">✖</button></div>' +
+            '<div class="aiq-body"></div><div class="aiq-foot"><input type="text" placeholder="Pregunta algo… ej: ¿quién no cumple este mes?" autocomplete="off"><button type="button" data-act="send">Enviar</button></div>';
+        document.body.appendChild(fab); document.body.appendChild(panel);
+        body = panel.querySelector('.aiq-body'); input = panel.querySelector('input');
+        function bienvenida() { addMsg('<p><b>Hola 👋</b> Soy el <b>Asistente Rápido LAE</b>. Respondo solo con los datos que ya están en este programa.</p>' + chips(['¿cuántas intervenciones directas hay este mes?', '¿cuántos jóvenes hay vigentes?', 'intervenciones de la semana pasada', 'flexibilizados este mes', 'ayuda']), 'aiq-b'); }
+        fab.addEventListener('click', function () { panel.classList.toggle('open'); if (panel.classList.contains('open')) { if (!body.children.length) bienvenida(); input.focus(); } });
+        panel.addEventListener('click', function (e) {
+            var c = e.target.closest('.aiq-chip'); if (c) { ask(c.getAttribute('data-q')); return; }
+            var x = e.target.closest('[data-exp]'); if (x) { exportar(x); return; }
+            var a = e.target.closest('[data-act]'); if (!a) return;
+            var act = a.getAttribute('data-act');
+            if (act === 'close') panel.classList.remove('open');
+            else if (act === 'clear') { body.innerHTML = ''; ctx = {}; bienvenida(); }
+            else if (act === 'send') ask(input.value);
+        });
+        input.addEventListener('keydown', function (e) { if (e.key === 'Enter') ask(input.value); else if (e.key === 'Escape') panel.classList.remove('open'); });
+    }
+
+    function mostrarSiLogueado() {
+        var mc = document.getElementById('mainContent');
+        if (mc && mc.style.display === 'block') fab.classList.add('on');
+    }
+    build();
+    var _vp = window.verificarPassword;
+    window.verificarPassword = function () { var r = _vp.apply(this, arguments); mostrarSiLogueado(); return r; };
+    mostrarSiLogueado();
 })();
 </script>
 
